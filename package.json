@@ -1,0 +1,29 @@
+{
+  "name": "fullstack-pilot",
+  "version": "0.0.0",
+  "description": "Here’s a README template for **FullStack Pilot** in English:",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "new": "npm run new:nextjs",
+    "new:nextjs": "node ./.scripts/new/nextjs.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koydas/fullstack-pilot.git"
+  },
+  "keywords": [
+    "fullstack",
+    "full-stack"
+  ],
+  "author": "koydas@hotmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/koydas/fullstack-pilot/issues"
+  },
+  "homepage": "https://github.com/koydas/fullstack-pilot#readme",
+  "dependencies": {
+    "chalk": "^5.3.0"
+  }
+}
