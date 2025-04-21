@@ -1,0 +1,50 @@
+name: ✨ Feature Request
+description: Suggérer une idée ou une amélioration
+title: "[FEATURE] - "
+labels: [enhancement]
+assignees:
+  - koydas
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de détailler ta proposition de façon claire 🙌
+
+  - type: input
+    id: context
+    attributes:
+      label: Contexte
+      description: Pourquoi cette fonctionnalité est-elle nécessaire ?
+      placeholder: ex. Pour améliorer l'expérience utilisateur...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      placeholder: Décris la fonctionnalité, son comportement attendu, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternatives considérées
+      placeholder: Y a-t-il d'autres façons de résoudre ce besoin ?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Niveau d'impact
+      description: Importance ou urgence de la fonctionnalité
+      options:
+        - Faible
+        - Moyen
+        - Élevé
+        - Critique
+    validations:
+      required: false
