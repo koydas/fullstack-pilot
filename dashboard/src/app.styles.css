@@ -1,0 +1,13 @@
+import styled from 'styled-components';
+
+export const List = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+export const Item = styled.li`
+  background: #f0f0f0;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 6px;
+`;
