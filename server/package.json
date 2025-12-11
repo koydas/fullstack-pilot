@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "test": "echo \"No server tests specified\" && exit 0"
   },
   "dependencies": {
     "cors": "^2.8.5",
