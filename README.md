@@ -6,6 +6,8 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 - Node.js 18+
 - MongoDB instance (local or remote)
 
+> Tip: If you prefer Docker, a Compose setup is available in `mongo-db/`. Run `cd mongo-db && docker compose up -d` to start a local MongoDB instance at `mongodb://localhost:27017/fullstack-pilot`.
+
 ## Project structure
 - `client/` – React UI built with Vite.
 - `server/` – Express + Mongoose API service.
@@ -22,7 +24,7 @@ cd ../client && npm install
 > If your environment restricts access to the npm registry, configure the registry your network allows before running the installs.
 
 ### 2) Configure environment
-Create a `.env` file in `server/` (or export variables in your shell):
+Create a `.env` file in `server/` (the server will load it automatically) or export variables in your shell:
 ```
 MONGODB_URI=mongodb://localhost:27017/fullstack-pilot
 PORT=4000
