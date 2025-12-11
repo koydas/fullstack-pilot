@@ -1,5 +1,5 @@
 name: ✨ Feature Request
-description: Suggérer une idée ou une amélioration
+description: Suggest an idea or improvement
 title: "[FEATURE] - "
 labels: [enhancement]
 assignees:
@@ -9,42 +9,42 @@ body:
   - type: markdown
     attributes:
       value: |
-        Merci de détailler ta proposition de façon claire 🙌
+        Please describe your proposal clearly 🙌
 
   - type: input
     id: context
     attributes:
-      label: Contexte
-      description: Pourquoi cette fonctionnalité est-elle nécessaire ?
-      placeholder: ex. Pour améliorer l'expérience utilisateur...
+      label: Context
+      description: Why is this feature needed?
+      placeholder: e.g. To improve the user experience...
     validations:
       required: true
 
   - type: textarea
     id: proposal
     attributes:
-      label: Proposition
-      placeholder: Décris la fonctionnalité, son comportement attendu, etc.
+      label: Proposal
+      placeholder: Describe the feature and its expected behavior
     validations:
       required: true
 
   - type: textarea
     id: alternative
     attributes:
-      label: Alternatives considérées
-      placeholder: Y a-t-il d'autres façons de résoudre ce besoin ?
+      label: Considered alternatives
+      placeholder: Are there other ways to solve this need?
     validations:
       required: false
 
   - type: dropdown
     id: impact
     attributes:
-      label: Niveau d'impact
-      description: Importance ou urgence de la fonctionnalité
+      label: Impact level
+      description: Importance or urgency of the feature
       options:
-        - Faible
-        - Moyen
-        - Élevé
-        - Critique
+        - Low
+        - Medium
+        - High
+        - Critical
     validations:
       required: false
