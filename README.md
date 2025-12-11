@@ -1,75 +1,52 @@
-Here’s a README template for **FullStack Pilot** in English:
-
----
-
 # FullStack Pilot
 
-**FullStack Pilot** is a self-organized full-stack service designed to simplify and automate the development and management of modern applications. It provides seamless integration between *micro-UI*, *micro-services*, and DevOps tools, enabling rapid and efficient setup of your full-stack projects.
+A minimal full-stack starter that pairs a React frontend with a Node.js + MongoDB backend. The UI lets you add and remove projects from a list, and the API persists them in a Mongo database.
 
-## 🚀 Features
+## Prerequisites
+- Node.js 18+
+- MongoDB instance (local or remote)
 
-- **Micro-UI Architecture**: Easily integrate modular React components for dynamic and responsive user interfaces.
-- **Node.js Micro-Services**: Simplified development and management of micro-services with ready-to-use tools.
-- **CI/CD Automation**: Integration with CI/CD pipelines for continuous delivery with minimal effort.
-- **Pre-configured Templates**: Templates and tools for quick setup of infrastructure as code (IaC) and DevOps configurations.
-- **Comprehensive Documentation**: Detailed guides for installation, configuration, and usage of the various components.
+## Project structure
+- `client/` – React UI built with Vite.
+- `server/` – Express + Mongoose API service.
 
-## 📦 Installation
+## Getting started
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/koydas/fullstack-pilot.git
-   cd fullstack-pilot
-   ```
+### 1) Install dependencies
+Run the following commands from the repository root:
+```bash
+cd server && npm install
+cd ../client && npm install
+```
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   npm run new <my-app> # by default: nextJS
-   
-   
-   ```
+> If your environment restricts access to the npm registry, configure the registry your network allows before running the installs.
 
-3. **Configuration**: Follow the instructions in the `config.<my-app>.js` file to set up your environment.
+### 2) Configure environment
+Create a `.env` file in `server/` (or export variables in your shell):
+```
+MONGODB_URI=mongodb://localhost:27017/fullstack-pilot
+PORT=4000
+```
 
-4. **Start**:
-   ```bash
-   npm start
-   ```
+### 3) Start the backend
+```bash
+cd server
+npm run dev
+```
+The API will be available at `http://localhost:4000/api`.
 
-## 🛠️ Usage
+### 4) Start the frontend
+```bash
+cd client
+npm run dev
+```
+Open the printed Vite dev server URL (default `http://localhost:5173`). The dev server proxies `/api` requests to the backend.
 
-1. **Develop UI Components**: Add your React components to the `src/components` directory.
-2. **Create Micro-Services**: Develop and manage your micro-services in the `services` directory.
-3. **Deploy with CI/CD**: Configure your CI/CD pipelines using the configuration files provided in the `ci-cd` directory.
+## API overview
+- `GET /api/projects` – list projects
+- `POST /api/projects` – create a project. Body: `{ "name": "My project" }`
+- `DELETE /api/projects/:id` – delete a project by id
 
-## 📚 Documentation
-
-Refer to the comprehensive documentation in the `docs` directory for detailed guides and usage examples.
-
-## 🔧 Contributing
-
-1. **Fork the repository** and create a branch:
-   ```bash
-   git checkout -b my-feature-branch
-   ```
-
-2. **Add your changes** and **commit**:
-   ```bash
-   git add .
-   git commit -m "Add new feature"
-   ```
-
-3. **Push** and **create a Pull Request** on GitHub.
-
-## 📄 License
-
-This project is licensed under the [MIT](LICENSE) License.
-
-## 📧 Contact
-
-For any questions or suggestions, please contact: [your.email@example.com](mailto:your.email@example.com).
-
----
-
-> **Observation**: This template includes key sections for a README. Feel free to adjust or expand it based on the specific features of **FullStack Pilot** and your user needs.
+## Deployment notes
+- Set `MONGODB_URI` to your managed MongoDB connection string.
+- Use `npm run build` inside `client/` to create a production build. Serve the static assets with your preferred host and point them at the running backend.
