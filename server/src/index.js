@@ -35,7 +35,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-const projectSchema = new mongoose.Schema(
+const appSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -46,7 +46,7 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Project = mongoose.model('Project', projectSchema);
+const App = mongoose.model('App', appSchema);
 
 const asyncHandler = (handler) => async (req, res, next) => {
   try {
@@ -57,33 +57,33 @@ const asyncHandler = (handler) => async (req, res, next) => {
 };
 
 app.get(
-  '/api/projects',
+  '/api/apps',
   asyncHandler(async (_req, res) => {
-    const projects = await Project.find().sort({ createdAt: -1 });
-    res.json(projects);
+    const apps = await App.find().sort({ createdAt: -1 });
+    res.json(apps);
   })
 );
 
 app.post(
-  '/api/projects',
+  '/api/apps',
   asyncHandler(async (req, res) => {
     const { name } = req.body;
     if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'Project name is required.' });
+      return res.status(400).json({ error: 'App name is required.' });
     }
 
-    const project = await Project.create({ name: name.trim() });
-    res.status(201).json(project);
+    const appRecord = await App.create({ name: name.trim() });
+    res.status(201).json(appRecord);
   })
 );
 
 app.delete(
-  '/api/projects/:id',
+  '/api/apps/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const project = await Project.findByIdAndDelete(id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found.' });
+    const appRecord = await App.findByIdAndDelete(id);
+    if (!appRecord) {
+      return res.status(404).json({ error: 'App not found.' });
     }
     res.status(204).send();
   })

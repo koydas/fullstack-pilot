@@ -72,12 +72,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.projects-list {
+.apps-list {
   display: grid;
   gap: 0.75rem;
 }
 
-.project-item {
+.app-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -87,16 +87,16 @@ button:disabled {
   background: #f8fafc;
 }
 
-.project-meta {
+.app-meta {
   display: flex;
   flex-direction: column;
 }
 
-.project-name {
+.app-name {
   font-weight: 700;
 }
 
-.project-date {
+.app-date {
   font-size: 0.85rem;
   color: #475569;
 }
