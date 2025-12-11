@@ -1,0 +1,12 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: fullstack-pilot-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: fullstack-pilot
+    volumes:
+      - ./data:/data/db
+      - ./init:/docker-entrypoint-initdb.d
