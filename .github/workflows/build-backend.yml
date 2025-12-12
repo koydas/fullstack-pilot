@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "server/**"
+      - "services/apps-service/**"
       - ".github/workflows/build-backend.yml"
   workflow_dispatch:
 
@@ -36,8 +36,8 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: ./services/apps-service
+          file: ./services/apps-service/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:latest

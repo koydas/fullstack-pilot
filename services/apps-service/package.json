@@ -1,11 +1,12 @@
 {
-  "name": "fullstack-pilot-server",
+  "name": "fullstack-pilot-apps-service",
   "version": "1.0.0",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
+    "start:apps": "SERVICE_NAME=apps SERVICE_BASE_PATH=/ node src/index.js",
     "test": "echo \"No server tests specified\" && exit 0"
   },
   "dependencies": {

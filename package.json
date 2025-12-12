@@ -7,13 +7,13 @@
   "scripts": {
     "new": "npm run new:nextjs",
     "new:nextjs": "node ./.scripts/new/nextjs.js",
-    "install:dependancies:all": "npm run install:dependancies:server && npm run install:dependancies:client",
-    "install:dependancies:server": "cd server && npm install",
+    "install:dependancies:all": "npm run install:dependancies:apps-service && npm run install:dependancies:client",
+    "install:dependancies:apps-service": "cd services/apps-service && npm install",
     "install:dependancies:client": "cd client && npm install",
-    "test:server": "cd server && npm test",
+    "test:apps-service": "cd services/apps-service && npm test",
     "test:client": "cd client && npm test",
-    "test:all": "npm run test:server && npm run test:client",
-    "start:backend": "cd server && npm run dev",
+    "test:all": "npm run test:apps-service && npm run test:client",
+    "start:backend": "cd services/apps-service && npm run dev",
     "start:client": "cd client && npm run dev"
   },
   "repository": {
