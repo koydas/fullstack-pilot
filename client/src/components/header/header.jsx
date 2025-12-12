@@ -1,11 +1,13 @@
+import { Header, Logo, Subtitle, Title } from './header.styles';
+
 export default function AppHeader() {
   return (
-    <header>
-      <div className="logo" aria-hidden="true" />
+    <Header>
+      <Logo aria-hidden="true" />
       <div>
-        <p style={{ margin: 0, color: '#475569' }}>FullStack Pilot</p>
-        <h1>App Manager</h1>
+        <Subtitle>FullStack Pilot</Subtitle>
+        <Title>App Manager</Title>
       </div>
-    </header>
+    </Header>
   );
 }

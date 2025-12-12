@@ -1,3 +1,5 @@
+import { CardWrapper } from './card.styles';
+
 export default function Card({ children }) {
-  return <div className="card">{children}</div>;
+  return <CardWrapper>{children}</CardWrapper>;
 }
