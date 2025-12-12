@@ -59,4 +59,22 @@ describe('App', () => {
     await waitFor(() => expect(deleteApp).toHaveBeenCalledWith('1'));
     await waitFor(() => expect(screen.queryByText('Existing app')).not.toBeInTheDocument());
   });
+
+  it('opens an app modal and closes it with the close button', async () => {
+    fetchApps.mockResolvedValueOnce([
+      { _id: '1', name: 'Existing app', createdAt: '2024-06-01T00:00:00Z' },
+    ]);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    await screen.findByText('Existing app');
+    await user.click(screen.getByRole('button', { name: /open app/i }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
 });

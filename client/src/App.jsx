@@ -30,7 +30,7 @@ export default function App() {
     setSelectedApp(app);
   }
 
-  function closeModal() {
+  function closeApp() {
     setSelectedApp(null);
   }
 
@@ -88,7 +88,7 @@ export default function App() {
           <List apps={apps} onRemove={removeApp} showEmpty={!loading} onSelect={openApp} />
         </Card>
 
-        {selectedApp && <AppModal app={selectedApp} onClose={closeModal} />}
+        {selectedApp && <AppModal app={selectedApp} onClose={closeApp} />}
       </AppShell>
     </>
   );
