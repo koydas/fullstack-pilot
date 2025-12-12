@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import List from './components/list/list.jsx';
-import AppHeader from './components/header/header.jsx';
 import Card from './components/card/card.jsx';
+import CreationApp from './components/creation-app/creation-app.jsx';
+import AppHeader from './components/header/header.jsx';
+import List from './components/list/list.jsx';
+import { AppShell, GlobalStyle } from './App.styles.js';
 import { createApp, deleteApp, fetchApps } from './services/apps/apps-service.jsx';
 
 export default function App() {
@@ -59,29 +61,23 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <AppHeader />
+    <>
+      <GlobalStyle />
+      <AppShell>
+        <AppHeader />
 
-      <Card>
-        <form className="form-row" onSubmit={addApp}>
-          <input
-            type="text"
-            name="appName"
-            placeholder="Enter an app name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            disabled={loading}
-            aria-label="App name"
+        <Card>
+          <CreationApp
+            name={name}
+            onNameChange={(event) => setName(event.target.value)}
+            onSubmit={addApp}
+            loading={loading}
+            error={error}
           />
-          <button type="submit" disabled={loading || !name.trim()}>
-            Add app
-          </button>
-        </form>
 
-        {error && <p className="status-text">{error}</p>}
-
-        <List apps={apps} onRemove={removeApp} showEmpty={!loading} />
-      </Card>
-    </div>
+          <List apps={apps} onRemove={removeApp} showEmpty={!loading} />
+        </Card>
+      </AppShell>
+    </>
   );
 }
