@@ -38,3 +38,19 @@ export const RemoveButton = styled.button`
   cursor: pointer;
   font-weight: 600;
 `;
+
+export const AppActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`;
+
+export const OpenButton = styled.button`
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+`;

@@ -1,9 +1,11 @@
 import {
+  AppActions,
   AppDate,
   AppItem,
   AppMeta,
   AppName,
   ListContainer,
+  OpenButton,
   RemoveButton,
 } from './list.styles';
 
@@ -11,7 +13,7 @@ function formatDate(value) {
   return new Date(value).toLocaleString();
 }
 
-export default function List({ apps, onRemove, showEmpty = true }) {
+export default function List({ apps, onRemove, showEmpty = true, onSelect }) {
   return (
     <ListContainer aria-live="polite">
       {apps.length === 0 && showEmpty && <p>No apps yet.</p>}
@@ -22,9 +24,20 @@ export default function List({ apps, onRemove, showEmpty = true }) {
             <AppName>{app.name}</AppName>
             <AppDate>Created {formatDate(app.createdAt)}</AppDate>
           </AppMeta>
-          <RemoveButton type="button" onClick={() => onRemove(app)}>
-            Remove app
-          </RemoveButton>
+          <AppActions>
+            <OpenButton type="button" onClick={() => onSelect?.(app)}>
+              Open app
+            </OpenButton>
+            <RemoveButton
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemove(app);
+              }}
+            >
+              Remove app
+            </RemoveButton>
+          </AppActions>
         </AppItem>
       ))}
     </ListContainer>
