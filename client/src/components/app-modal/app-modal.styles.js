@@ -95,3 +95,42 @@ export const TabContent = styled.div`
   box-shadow: inset 0 1px 0 #e2e8f0;
   line-height: 1.6;
 `;
+
+export const ModalBody = styled.div`
+  padding: 1.25rem 1.5rem;
+  line-height: 1.6;
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+`;
+
+export const SecondaryButton = styled.button`
+  background: white;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+`;
+
+export const DangerButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
