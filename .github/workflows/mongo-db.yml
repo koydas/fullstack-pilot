@@ -1,0 +1,36 @@
+name: Package MongoDB image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "mongo-db/**"
+      - ".github/workflows/mongo-db.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build MongoDB Docker image
+        run: |
+          docker build -t fullstack-pilot-mongo:latest mongo-db
+
+      - name: Export Docker image
+        run: |
+          docker save fullstack-pilot-mongo:latest | gzip > mongo-db-image.tar.gz
+          cp mongo-db/docker-compose.yml mongo-db-compose.yml
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mongo-db-docker-package
+          path: |
+            mongo-db-image.tar.gz
+            mongo-db-compose.yml
+          retention-days: 7

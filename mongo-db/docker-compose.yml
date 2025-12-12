@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:7
+    image: fullstack-pilot-mongo:latest
     container_name: fullstack-pilot-mongo
     restart: unless-stopped
     ports:
