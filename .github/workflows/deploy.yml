@@ -6,50 +6,17 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ${{ github.repository_owner }}
-  BACKEND_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/fullstack-pilot-backend
-  FRONTEND_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/fullstack-pilot-frontend
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/fullstack-pilot-backend:latest
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/fullstack-pilot-frontend:latest
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./server
-          file: ./server/Dockerfile
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./client
-          file: ./client/Dockerfile
-          push: true
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
 
       - name: Ensure remote deployment directory exists
         uses: appleboy/ssh-action@v1.0.3
@@ -73,8 +40,8 @@ jobs:
       - name: Deploy stack with Docker Compose
         uses: appleboy/ssh-action@v1.0.3
         env:
-          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}:latest
-          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}:latest
+          BACKEND_IMAGE: ${{ env.BACKEND_IMAGE }}
+          FRONTEND_IMAGE: ${{ env.FRONTEND_IMAGE }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
