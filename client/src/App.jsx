@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Card from './components/card/card.jsx';
+import AppModal from './components/app-modal/app-modal.jsx';
 import CreationApp from './components/creation-app/creation-app.jsx';
 import AppHeader from './components/header/header.jsx';
 import List from './components/list/list.jsx';
@@ -11,6 +12,7 @@ export default function App() {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedApp, setSelectedApp] = useState(null);
 
   async function loadApps() {
     try {
@@ -22,6 +24,14 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function openApp(app) {
+    setSelectedApp(app);
+  }
+
+  function closeApp() {
+    setSelectedApp(null);
   }
 
   async function addApp(event) {
@@ -75,8 +85,10 @@ export default function App() {
             error={error}
           />
 
-          <List apps={apps} onRemove={removeApp} showEmpty={!loading} />
+          <List apps={apps} onRemove={removeApp} showEmpty={!loading} onSelect={openApp} />
         </Card>
+
+        {selectedApp && <AppModal app={selectedApp} onClose={closeApp} />}
       </AppShell>
     </>
   );
