@@ -15,6 +15,7 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     setupFiles: './src/test/setup.js',
+    globals: true,
   },
   server: {
     port: 5173,
