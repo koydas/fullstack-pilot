@@ -11,6 +11,7 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 ## Project structure
 - `client/` – React UI built with Vite.
 - `server/` – Express + Mongoose API service.
+- `dotnet-service/` – .NET 8 Web API (contrôleurs) exposant des endpoints CRUD avec stockage en mémoire.
 
 ## Getting started
 
@@ -36,6 +37,14 @@ cd server
 npm run dev
 ```
 The API will be available at `http://localhost:4000/api`.
+
+### Optional: run the .NET CRUD service
+```bash
+cd dotnet-service
+dotnet restore
+dotnet run
+```
+It exposes `/api/projects` routes backed by an in-memory repository (see `dotnet-service/README.md`).
 
 ### 4) Start the frontend
 ```bash
