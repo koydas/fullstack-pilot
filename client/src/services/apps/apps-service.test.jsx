@@ -1,6 +1,6 @@
 import { createApp, deleteApp, fetchApps } from './apps-service.jsx';
 
-const apiMocks = { get: vi.fn(), post: vi.fn(), delete: vi.fn() };
+const apiMocks = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), delete: vi.fn() }));
 
 vi.mock('axios', () => ({
   __esModule: true,
