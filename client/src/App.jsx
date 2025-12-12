@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: '/api',
-});
-
-function formatDate(value) {
-  return new Date(value).toLocaleString();
-}
+import List from './components/list/list.jsx';
+import AppHeader from './components/header/header.jsx';
+import Card from './components/card/card.jsx';
+import { createApp, deleteApp, fetchApps } from './services/apps/apps-service.jsx';
 
 export default function App() {
   const [apps, setApps] = useState([]);
@@ -18,7 +13,7 @@ export default function App() {
   async function loadApps() {
     try {
       setLoading(true);
-      const { data } = await api.get('/apps');
+      const data = await fetchApps();
       setApps(data);
     } catch (err) {
       setError(err?.response?.data?.error || 'Could not load apps');
@@ -33,7 +28,7 @@ export default function App() {
 
     try {
       setLoading(true);
-      const { data } = await api.post('/apps', { name: name.trim() });
+      const data = await createApp(name.trim());
       setApps((prev) => [data, ...prev]);
       setName('');
       setError('');
@@ -52,7 +47,7 @@ export default function App() {
     if (!confirmed) return;
 
     try {
-      await api.delete(`/apps/${app._id}`);
+      await deleteApp(app._id);
       setApps((prev) => prev.filter((item) => item._id !== app._id));
     } catch (err) {
       setError(err?.response?.data?.error || 'Could not remove app');
@@ -65,15 +60,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <header>
-        <div className="logo" aria-hidden="true" />
-        <div>
-          <p style={{ margin: 0, color: '#475569' }}>FullStack Pilot</p>
-          <h1>App Manager</h1>
-        </div>
-      </header>
+      <AppHeader />
 
-      <div className="card">
+      <Card>
         <form className="form-row" onSubmit={addApp}>
           <input
             type="text"
@@ -91,26 +80,8 @@ export default function App() {
 
         {error && <p className="status-text">{error}</p>}
 
-        <div className="apps-list" aria-live="polite">
-          {apps.length === 0 && !loading && <p>No apps yet.</p>}
-
-          {apps.map((app) => (
-            <article key={app._id} className="app-item">
-              <div className="app-meta">
-                <span className="app-name">{app.name}</span>
-                <span className="app-date">Created {formatDate(app.createdAt)}</span>
-              </div>
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => removeApp(app)}
-              >
-                Remove app
-              </button>
-            </article>
-          ))}
-        </div>
-      </div>
+        <List apps={apps} onRemove={removeApp} showEmpty={!loading} />
+      </Card>
     </div>
   );
 }
