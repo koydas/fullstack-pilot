@@ -12,6 +12,10 @@ export default defineConfig({
       'styled-components': resolve(__dirname, './src/lib/styled-components.js'),
     },
   },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+  },
   server: {
     port: 5173,
     proxy: {
