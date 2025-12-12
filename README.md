@@ -11,6 +11,7 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 ## Project structure
 - `client/` – React UI built with Vite.
 - `server/` – Express + Mongoose API service.
+- `flask-service/` – Standalone Flask API with in-memory CRUD endpoints.
 
 ## Getting started
 
@@ -36,6 +37,16 @@ cd server
 npm run dev
 ```
 The API will be available at `http://localhost:4000/api`.
+
+### 3b) Start the Flask CRUD service
+```bash
+cd flask-service
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+The API will be available at `http://localhost:5000/api` by default.
 
 ### 4) Start the frontend
 ```bash
