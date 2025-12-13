@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -7,6 +8,9 @@ import morgan from 'morgan';
 import { services, findServiceByName } from './services/index.js';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Minimal .env loader to keep configuration in sync with docker-compose defaults
 function loadEnvFile(envFilePath) {
@@ -26,6 +30,7 @@ function loadEnvFile(envFilePath) {
     });
 }
 
+loadEnvFile(path.resolve(__dirname, '..', '..', '.env'));
 loadEnvFile(path.resolve(process.cwd(), '.env'));
 
 const PORT = process.env.PORT || 4000;

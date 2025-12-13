@@ -1,5 +1,5 @@
 {
-  "name": "fullstack-pilot-apps-service",
+  "name": "apps-service",
   "version": "1.0.0",
   "main": "src/index.js",
   "type": "module",

@@ -10,21 +10,21 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 
 ## Project structure
 - `client/` – React UI built with Vite.
-- `services/apps-service/` – Express + Mongoose API service.
+- `services/` – Folder containing independently deployable services (e.g. `apps-service/`).
 
 ## Getting started
 
 ### 1) Install dependencies
-Run the following commands from the repository root:
+From the repository root, bootstrap dependencies for the services and client:
 ```bash
-cd services/apps-service && npm install
-cd ../client && npm install
+npm run init:services
+npm run init:client
 ```
 
 > If your environment restricts access to the npm registry, configure the registry your network allows before running the installs.
 
 ### 2) Configure environment
-Create a `.env` file in `services/apps-service/` (the service will load it automatically) or export variables in your shell:
+Create a default `.env` in `services/` for values shared by all services (each service also loads its own `.env` when present):
 ```
 MONGODB_URI=mongodb://localhost:27017/fullstack-pilot
 PORT=4000
