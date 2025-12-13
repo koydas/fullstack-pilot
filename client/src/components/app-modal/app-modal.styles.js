@@ -70,11 +70,12 @@ export const TabButton = styled.button`
   padding: 0.65rem 1rem;
   border-radius: 12px 12px 0 0;
   border: none;
-  background: ${(props) => (props.$active ? '#e0f2fe' : 'transparent')};
+  background: ${(props) => (props['data-active'] ? '#e0f2fe' : 'transparent')};
   color: #0f172a;
   font-weight: 700;
   cursor: pointer;
-  border-bottom: ${(props) => (props.$active ? '2px solid #0ea5e9' : '2px solid transparent')};
+  border-bottom: ${(props) =>
+    props['data-active'] ? '2px solid #0ea5e9' : '2px solid transparent'};
 `;
 
 export const TabPanels = styled.div`
