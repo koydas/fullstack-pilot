@@ -1,24 +1,43 @@
-name: Build backend image
+name: Build backend images
 
 on:
   push:
     branches: ["main"]
     paths:
-      - "server/**"
+      - "services/**"
       - ".github/workflows/build-backend.yml"
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: ${{ github.repository_owner }}
-  BACKEND_IMAGE_NAME: fullstack-pilot-backend
+  IMAGE_PREFIX: fullstack-pilot
 
 jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect services to build
+        id: set-matrix
+        run: |
+          node ./.devops/discover-services.js "$GITHUB_OUTPUT" "${{ github.event.before }}" "${{ github.sha }}"
+
   build:
+    needs: discover
+    if: needs.discover.outputs.services != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.discover.outputs.services) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,9 +55,9 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: ./services/${{ matrix.service }}
+          file: ./services/${{ matrix.service }}/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
