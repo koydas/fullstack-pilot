@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 const [outputFile, baseShaArg, headShaArg, servicesDirArg = 'services', workflowPathArg = '.github/workflows/build-backend.yml'] = process.argv.slice(2);
 
