@@ -1,17 +1,14 @@
 # GitOps layout
 
-Service-specific Kubernetes and Argo CD manifests live under `services/<service>/.devops`.
-Each folder provides:
-
-- `kustomization.yaml` with the deployment, service, and supporting resources for the component.
-- `application.yaml` so the service can be registered in Argo CD and synced from this repository.
+Service-specific Kubernetes manifests live under `services/<service>/.devops` and are packaged with Kustomize.
+Each folder provides the deployment, service, and supporting resources for the component.
 
 ## Bootstrap steps
 
-1. Apply the Argo CD Application for the service:
+1. Apply the Argo CD Applications from the consolidated `deploy/gitops/` folder (added to match the repo's deployment asset layout):
    ```bash
-   kubectl apply -f services/server/.devops/application.yaml
-   kubectl apply -f services/client/.devops/application.yaml
+   kubectl apply -f deploy/gitops/server-application.yaml
+   kubectl apply -f deploy/gitops/client-application.yaml
    ```
 2. Update the container image references as needed (for example via Kustomize image overrides or Argo CD parameters).
 3. Configure secrets such as `MONGODB_URI` with the values for your cluster before promoting beyond development.

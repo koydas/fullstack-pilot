@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fullstack-pilot-server
+  name: fullstack-pilot-client
   namespace: argocd
   labels:
     app.kubernetes.io/part-of: fullstack-pilot
@@ -9,8 +9,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/koydas/fullstack-pilot.git
-    targetRevision: HEAD
-    path: services/server/.devops
+    targetRevision: main
+    path: services/client/.devops
   destination:
     server: https://kubernetes.default.svc
     namespace: fullstack-pilot
