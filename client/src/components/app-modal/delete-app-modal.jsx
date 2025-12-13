@@ -14,6 +14,7 @@ export default function DeleteAppModal({ app, onCancel, onConfirm, loading }) {
   return (
     <ModalBackdrop onClick={onCancel} role="presentation">
       <ModalContent
+        $size="compact"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"

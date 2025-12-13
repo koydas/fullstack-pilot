@@ -14,20 +14,32 @@ export const ModalBackdrop = styled.div`
 export const ModalContent = styled.div`
   position: relative;
   background: white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   max-width: 1200px;
   max-height: 100vh;
   border-radius: 0;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 
   @media (min-width: 960px) {
     border-radius: 18px;
     margin: 1rem;
   }
+
+  ${(props) =>
+    props.$size === 'compact'
+      ? `
+    width: auto;
+    height: auto;
+    max-width: 520px;
+    max-height: 90vh;
+    border-radius: 18px;
+    margin: 1rem;
+  `
+      : ''}
 `;
 
 export const ModalHeader = styled.header`
