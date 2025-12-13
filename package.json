@@ -8,7 +8,7 @@
     "new": "npm run new:nextjs",
     "new:nextjs": "node ./.scripts/new/nextjs.js",
     "init": "npm run init:services && npm run init:client",
-    "init:services": "cd services && for dir in */; do [ -d \"$dir\" ] && [ -f \"$dir/package.json\" ] && (cd \"$dir\" && npm install); done",
+    "init:services": "node services/init-services.js",
     "init:client": "cd client && npm install",
     "test:apps-service": "cd services/apps-service && npm test",
     "test:client": "cd client && npm test",
