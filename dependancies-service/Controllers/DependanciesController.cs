@@ -6,11 +6,11 @@ namespace DependanciesService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectsController : ControllerBase
+public class DependanciesController : ControllerBase
 {
     private readonly IProjectRepository _repository;
 
-    public ProjectsController(IProjectRepository repository)
+    public DependanciesController(IProjectRepository repository)
     {
         _repository = repository;
     }

@@ -16,28 +16,28 @@ dotnet run
 L'API démarre sur `https://localhost:5001` ou `http://localhost:5000` par défaut. La page racine redirige vers Swagger afin d'explorer les routes.
 
 ## Endpoints
-- `GET /api/projects` – liste tous les projets
-- `GET /api/projects/{id}` – récupère un projet par identifiant
-- `POST /api/projects` – crée un projet `{ "name": "Titre", "description": "Optionnelle" }`
-- `PUT /api/projects/{id}` – met à jour un projet existant
-- `DELETE /api/projects/{id}` – supprime un projet
+- `GET /api/dependancies` – liste tous les projets
+- `GET /api/dependancies/{id}` – récupère un projet par identifiant
+- `POST /api/dependancies` – crée un projet `{ "name": "Titre", "description": "Optionnelle" }`
+- `PUT /api/dependancies/{id}` – met à jour un projet existant
+- `DELETE /api/dependancies/{id}` – supprime un projet
 
 ## Exemples de requêtes
 Créer un projet :
 ```bash
-curl -X POST http://localhost:5000/api/projects \
+curl -X POST http://localhost:5000/api/dependancies \
   -H "Content-Type: application/json" \
   -d '{"name":"Nouveau projet","description":"Démo .NET"}'
 ```
 
 Mettre à jour un projet :
 ```bash
-curl -X PUT http://localhost:5000/api/projects/<ID> \
+curl -X PUT http://localhost:5000/api/dependancies/<ID> \
   -H "Content-Type: application/json" \
   -d '{"name":"Nom mis à jour","description":"Nouvelle description"}'
 ```
 
 Supprimer un projet :
 ```bash
-curl -X DELETE http://localhost:5000/api/projects/<ID>
+curl -X DELETE http://localhost:5000/api/dependancies/<ID>
 ```

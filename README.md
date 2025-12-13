@@ -48,7 +48,7 @@ Or start it from the repo root with the provided npm script:
 ```bash
 npm run start:dependancies-service
 ```
-It exposes `/api/projects` routes backed by an in-memory repository (see `dependancies-service/README.md`).
+It exposes `/api/dependancies` routes backed by an in-memory repository (see `dependancies-service/README.md`).
 
 ### 4) Start the frontend
 ```bash
