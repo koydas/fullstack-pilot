@@ -2,91 +2,102 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 
-const [outputFile, baseShaArg, headShaArg, servicesDirArg = 'services', workflowPathArg = '.github/workflows/build-backend.yml'] = process.argv.slice(2);
+const [outputFile, configPathArg = 'repo-configs.yaml'] = process.argv.slice(2);
 
 if (!outputFile) {
-  console.error('Usage: discover-services.js <output-file> [base-sha] [head-sha] [services-dir] [workflow-path]');
+  console.error('Usage: discover-services.js <output-file> [config-path]');
   process.exit(1);
 }
 
-const servicesDir = path.resolve(servicesDirArg);
+const configPath = path.resolve(configPathArg);
 
 function writeOutput(value) {
   fs.appendFileSync(outputFile, `services=${value}\n`);
 }
 
-if (!fs.existsSync(servicesDir)) {
-  console.log('No services directory found.');
+function readServicesPath() {
+  if (!fs.existsSync(configPath)) {
+    console.error(`Config file not found at ${configPath}.`);
+    return null;
+  }
+
+  const content = fs.readFileSync(configPath, 'utf8');
+  const match = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line.startsWith('services_path:'));
+
+  if (!match) {
+    console.error('services_path not defined in repo-configs.yaml.');
+    return null;
+  }
+
+  const [, value] = match.split(/services_path:\s*/);
+  const cleaned = value.replace(/^['"]|['"]$/g, '').trim();
+
+  if (!cleaned) {
+    console.error('services_path is empty in repo-configs.yaml.');
+    return null;
+  }
+
+  return cleaned.replace(/^\//, '');
+}
+
+const servicesRoot = readServicesPath();
+
+if (!servicesRoot) {
   writeOutput('[]');
   process.exit(0);
 }
 
-let baseSha = baseShaArg;
-let headSha = headShaArg;
+const servicesRootAbsolute = path.resolve(servicesRoot);
 
-if (!headSha) {
-  console.log('Missing HEAD sha; defaulting to build all services.');
-  baseSha = '';
+if (!fs.existsSync(servicesRootAbsolute) || !fs.statSync(servicesRootAbsolute).isDirectory()) {
+  console.error(`services_path '${servicesRoot}' is not a directory.`);
+  writeOutput('[]');
+  process.exit(0);
 }
 
-if (baseSha) {
-  try {
-    execSync(`git fetch --no-tags --prune --depth=1 origin ${baseSha}`, { stdio: 'ignore' });
-  } catch (error) {
-    // Ignore fetch failures and continue with best-effort comparison
-  }
-}
+const entries = fs.readdirSync(servicesRootAbsolute, { withFileTypes: true });
 
-let workflowChanged = false;
-if (baseSha && headSha) {
-  try {
-    const diff = execSync(`git diff --name-only ${baseSha} ${headSha} -- ${workflowPathArg}`, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    });
-    workflowChanged = diff.trim().length > 0;
-  } catch (error) {
-    workflowChanged = false;
-  }
-}
+const serviceDirectories = entries
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .filter((name) => name.endsWith('-service'));
 
-function discoverServices(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isDirectory())
-    .filter((entry) => fs.existsSync(path.join(dir, entry.name, 'Dockerfile')))
-    .filter((entry) => fs.existsSync(path.join(dir, entry.name, 'package.json')))
-    .map((entry) => entry.name);
-}
+const servicesWithDockerfile = serviceDirectories
+  .map((serviceName) => {
+    const candidateRoots = [
+      path.join(servicesRoot, serviceName),
+      serviceName,
+    ];
 
-const services = discoverServices(servicesDir);
+    const match = candidateRoots.find((candidate) =>
+      fs.existsSync(path.resolve(candidate, 'Dockerfile')),
+    );
 
-let changedServices = [];
-
-if (!baseSha || workflowChanged) {
-  changedServices = services;
-} else {
-  changedServices = services.filter((service) => {
-    try {
-      const diff = execSync(`git diff --name-only ${baseSha} ${headSha} -- ${path.join(servicesDirArg, service)}`.trim(), {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'ignore'],
-      });
-      return diff.trim().length > 0;
-    } catch (error) {
-      return false;
+    if (!match) {
+      console.warn(`Skipping ${serviceName}: no Dockerfile found in ${candidateRoots.join(' or ')}.`);
+      return null;
     }
-  });
-}
 
-if (changedServices.length === 0) {
-  console.log('No services changed; nothing to build.');
+    const dockerfilePath = path.join(match, 'Dockerfile');
+
+    return {
+      name: serviceName,
+      path: match,
+      dockerfile: dockerfilePath,
+    };
+  })
+  .filter(Boolean);
+
+if (servicesWithDockerfile.length === 0) {
+  console.log('No backend services discovered.');
   writeOutput('[]');
   process.exit(0);
 }
 
-const matrix = JSON.stringify(changedServices);
+const matrix = JSON.stringify(servicesWithDockerfile);
 console.log(`Services to build: ${matrix}`);
 writeOutput(matrix);
