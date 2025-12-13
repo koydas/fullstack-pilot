@@ -8,14 +8,14 @@
     "new": "npm run new:nextjs",
     "new:nextjs": "node ./.scripts/new/nextjs.js",
     "init": "npm run init:services && npm run init:client",
-    "init:services": "node services/init-services.js",
+    "init:services": "node .devops/init-services.js",
     "init:client": "cd client && npm install",
     "test:apps-service": "cd services/apps-service && npm test",
     "test:client": "cd client && npm test",
     "test:all": "npm run test:apps-service && npm run test:client",
     "start:apps-service": "cd services/apps-service && npm run dev",
     "start:client": "cd client && npm run dev",
-    "start:services": "node services/start-all-services.js"
+    "start:services": "node .devops/start-all-services.js"
   },
   "repository": {
     "type": "git",

@@ -4,7 +4,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const servicesRoot = __dirname;
+const servicesRoot = join(__dirname, '..', 'services');
 
 const serviceDirectories = readdirSync(servicesRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
