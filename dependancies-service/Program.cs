@@ -1,4 +1,5 @@
 using DependanciesService.Services;
+using DependanciesService.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<MonitoringMiddleware>();
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapControllers();
