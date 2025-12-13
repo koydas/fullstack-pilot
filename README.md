@@ -46,6 +46,23 @@ flowchart LR
    - Flask: `npm run start:services-service` (defaults to `http://localhost:5000/api`).
    - .NET: `npm run start:dependancies-service` (routes under `/api/dependancies`).
 
+## One-command local environment
+
+Bring up the full stack (MongoDB, all APIs, and the production build of the frontend) with Docker Compose from the repository root:
+
+```bash
+docker compose up --build
+```
+
+Services are available at:
+- Frontend: http://localhost:5173/
+- Apps API: http://localhost:4000/api
+- Flask services API: http://localhost:5000/api
+- .NET dependencies API: http://localhost:6000/swagger
+- MongoDB: mongodb://localhost:27017/fullstack-pilot
+
+To rebuild after code changes, run `docker compose up --build` again. Use `docker compose down` to stop and remove the containers.
+
 ## Project structure
 - `client/` – React UI built with Vite.
 - `apps-service/` – Node/Express service uses MongoDB.
