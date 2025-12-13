@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fullstack-pilot-services-service
+  namespace: fullstack-pilot
+  labels:
+    app: fullstack-pilot-services-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fullstack-pilot-services-service
+  template:
+    metadata:
+      labels:
+        app: fullstack-pilot-services-service
+    spec:
+      containers:
+        - name: services-service
+          image: ghcr.io/koydas/fullstack-pilot/services-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4002
+          envFrom:
+            - configMapRef:
+                name: services-service-config
+            - secretRef:
+                name: services-service-secrets
+          readinessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi

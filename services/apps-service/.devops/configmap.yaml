@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apps-service-config
+  namespace: fullstack-pilot
+data:
+  PORT: "4001"
