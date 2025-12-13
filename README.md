@@ -48,6 +48,12 @@ python app.py
 ```
 The API will be available at `http://localhost:5000/api` by default.
 
+From the repository root you can also start the Flask service with npm:
+
+```bash
+npm run start:flask-service
+```
+
 ### 4) Start the frontend
 ```bash
 cd client
