@@ -15,6 +15,8 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
   - `services-service/` – Standalone Flask API with in-memory CRUD endpoints.
   - `dependancies-service/` – NET 8 Web API (controllers) exposing CRUD endpoints with in-memory storage.
 
+See `docs/ARCHITECTURE.md` for a high-level diagram of how the client, services, database, and CI/CD pieces fit together.
+
 ## Getting started
 
 ### 1) Install dependencies
