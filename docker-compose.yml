@@ -1,0 +1,52 @@
+version: "3.9"
+services:
+  mongo:
+    build: ./mongo-db
+    container_name: fullstack-pilot-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: fullstack-pilot
+    volumes:
+      - mongo-data:/data/db
+
+  apps-service:
+    build: ./services/apps-service
+    container_name: fullstack-pilot-apps-service
+    environment:
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/fullstack-pilot
+    depends_on:
+      - mongo
+    ports:
+      - "4000:4000"
+
+  services-service:
+    build: ./services-service
+    container_name: fullstack-pilot-services-service
+    environment:
+      PORT: 5000
+    ports:
+      - "5000:5000"
+
+  dependancies-service:
+    build: ./dependancies-service
+    container_name: fullstack-pilot-dependancies-service
+    environment:
+      ASPNETCORE_URLS: http://+:6000
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "6000:6000"
+
+  client:
+    build: ./client
+    container_name: fullstack-pilot-client
+    depends_on:
+      - apps-service
+    ports:
+      - "5173:80"
+
+volumes:
+  mongo-data:
+    driver: local
