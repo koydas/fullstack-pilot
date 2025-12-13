@@ -44,6 +44,10 @@ cd dotnet-service
 dotnet restore
 dotnet run
 ```
+Or start it from the repo root with the provided npm script:
+```bash
+npm run start:dotnet-service
+```
 It exposes `/api/projects` routes backed by an in-memory repository (see `dotnet-service/README.md`).
 
 ### 4) Start the frontend
