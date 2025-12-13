@@ -25,7 +25,7 @@ jobs:
       - name: Detect services to build
         id: set-matrix
         run: |
-          ./.devops/discover-services.sh "$GITHUB_OUTPUT" "${{ github.event.before }}" "${{ github.sha }}"
+          node ./.devops/discover-services.js "$GITHUB_OUTPUT" "${{ github.event.before }}" "${{ github.sha }}"
 
   build:
     needs: discover
