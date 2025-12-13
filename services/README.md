@@ -9,8 +9,9 @@ Each folder provides the deployment, service, and supporting resources for the c
    ```bash
    kubectl apply -f deploy/gitops/server-application.yaml
    kubectl apply -f deploy/gitops/client-application.yaml
+   kubectl apply -f deploy/gitops/apps-service-application.yaml
    ```
 2. Update the container image references as needed (for example via Kustomize image overrides or Argo CD parameters).
 3. Configure secrets such as `MONGODB_URI` with the values for your cluster before promoting beyond development.
 
-Both services default to the shared `fullstack-pilot` namespace and expose `/api` through the backend and `/` through the frontend Ingress host `fullstack-pilot.local`.
+All services default to the shared `fullstack-pilot` namespace. The provided Ingress routes `/api` to the backend API and `/` to the client UI on the host `fullstack-pilot.local`.

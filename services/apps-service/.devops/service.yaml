@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fullstack-pilot-apps-service
+  namespace: fullstack-pilot
+  labels:
+    app: fullstack-pilot-apps-service
+spec:
+  type: ClusterIP
+  selector:
+    app: fullstack-pilot-apps-service
+  ports:
+    - port: 4001
+      targetPort: 4001
+      protocol: TCP
+      name: http
