@@ -13,7 +13,7 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 - `services/` – Folder containing independently deployable services (e.g. `apps-service/`).
   - `apps-service/`  – Standalone nodejs API with mongo-db database.
   - `services-service/` – Standalone Flask API with in-memory CRUD endpoints.
-  - `dependancies-service/` – .NET 8 Web API (contrôleurs) exposant des endpoints CRUD avec stockage en mémoire.
+  - `dependancies-service/` – NET 8 Web API (controllers) exposing CRUD endpoints with in-memory storage.
 
 ## Getting started
 
