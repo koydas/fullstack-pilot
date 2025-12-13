@@ -14,20 +14,32 @@ export const ModalBackdrop = styled.div`
 export const ModalContent = styled.div`
   position: relative;
   background: white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   max-width: 1200px;
   max-height: 100vh;
   border-radius: 0;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 
   @media (min-width: 960px) {
     border-radius: 18px;
     margin: 1rem;
   }
+
+  ${(props) =>
+    props.$size === 'compact'
+      ? `
+    width: auto;
+    height: auto;
+    max-width: 520px;
+    max-height: 90vh;
+    border-radius: 18px;
+    margin: 1rem;
+  `
+      : ''}
 `;
 
 export const ModalHeader = styled.header`
@@ -70,11 +82,12 @@ export const TabButton = styled.button`
   padding: 0.65rem 1rem;
   border-radius: 12px 12px 0 0;
   border: none;
-  background: ${(props) => (props.$active ? '#e0f2fe' : 'transparent')};
+  background: ${(props) => (props['data-active'] ? '#e0f2fe' : 'transparent')};
   color: #0f172a;
   font-weight: 700;
   cursor: pointer;
-  border-bottom: ${(props) => (props.$active ? '2px solid #0ea5e9' : '2px solid transparent')};
+  border-bottom: ${(props) =>
+    props['data-active'] ? '2px solid #0ea5e9' : '2px solid transparent'};
 `;
 
 export const TabPanels = styled.div`
@@ -94,4 +107,43 @@ export const TabContent = styled.div`
   border-radius: 12px;
   box-shadow: inset 0 1px 0 #e2e8f0;
   line-height: 1.6;
+`;
+
+export const ModalBody = styled.div`
+  padding: 1.25rem 1.5rem;
+  line-height: 1.6;
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+`;
+
+export const SecondaryButton = styled.button`
+  background: white;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+`;
+
+export const DangerButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
