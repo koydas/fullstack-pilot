@@ -15,7 +15,7 @@
     "test:all": "npm run test:server && npm run test:client",
     "start:backend": "cd server && npm run dev",
     "start:client": "cd client && npm run dev",
-    "start:flask-service": "cd flask-service && python app.py"
+    "start:services-service": "cd services-service && python app.py"
   },
   "repository": {
     "type": "git",
