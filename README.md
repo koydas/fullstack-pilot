@@ -1,5 +1,9 @@
 # FullStack Pilot
 
+[![Build backend images](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/build-backend.yml)
+[![Build frontend image](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/build-frontend.yml)
+[![Package MongoDB image](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/AndrewHulme/fullstack-pilot/actions/workflows/mongo-db.yml)
+
 Minimal React + Node.js + MongoDB starter focused on fast evaluation.
 
 ## What this project demonstrates
