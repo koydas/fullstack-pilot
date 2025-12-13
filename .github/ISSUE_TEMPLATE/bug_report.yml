@@ -29,6 +29,15 @@ body:
       required: true
 
   - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the concrete effects (e.g., blocked flows, data risk, performance degradation).
+      placeholder: e.g., "Checkout blocked for all mobile users; 500 error after submitting payment."
+    validations:
+      required: true
+
+  - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
@@ -55,3 +64,15 @@ body:
       render: shell
     validations:
       required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: Provide measurable, binary conditions to mark this issue complete.
+      value: |-
+        - [ ] Reproduction steps succeed without errors across supported environments
+        - [ ] Related logs show no unhandled exceptions for this path
+        - [ ] Regression coverage added for the fixed path
+    validations:
+      required: true
