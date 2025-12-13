@@ -31,11 +31,11 @@ PORT=4000
 ```
 
 ### 3) Start all services
-Run every service located under `/services` with a single command from the repository root:
+Run every Node-based service located under `/services` (i.e., directories with a `package.json`) with a single command from the repository root:
 ```bash
 npm run start:services
 ```
-Each service uses its own `npm run dev` (or `npm start`) script, and the apps service listens on `http://localhost:4000/api` by default.
+Each service uses its own `npm run dev` (or `npm start`) script, and the apps service listens on `http://localhost:4000/api` by default. Services that don't ship a `package.json` (e.g., paused Python components) are skipped.
 
 ### 4) Start the frontend
 ```bash
