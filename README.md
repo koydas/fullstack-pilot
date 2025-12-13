@@ -48,7 +48,7 @@ flowchart LR
 
 ## Project structure
 - `client/` – React UI built with Vite.
-- `services/` – Node/Express services (main `apps-service` uses MongoDB).
+- `apps-service/` – Node/Express service uses MongoDB.
 - `services-service/` – Flask CRUD sample.
 - `dependancies-service/` – .NET 8 CRUD sample.
 - `mongo-db/` – Docker Compose for local MongoDB.
