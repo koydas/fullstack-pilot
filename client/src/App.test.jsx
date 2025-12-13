@@ -10,17 +10,13 @@ vi.mock('./services/apps/apps-service.jsx', () => ({
 }));
 
 describe('App', () => {
-  const originalConfirm = window.confirm;
-
   beforeEach(() => {
     fetchApps.mockResolvedValue([]);
     createApp.mockResolvedValue({ _id: '1', name: 'Test app', createdAt: '2024-06-01T00:00:00Z' });
     deleteApp.mockResolvedValue({});
-    window.confirm = vi.fn(() => true);
   });
 
   afterEach(() => {
-    window.confirm = originalConfirm;
     vi.clearAllMocks();
   });
 
@@ -55,9 +51,31 @@ describe('App', () => {
     await screen.findByText('Existing app');
     await user.click(screen.getByRole('button', { name: /remove app/i }));
 
-    expect(window.confirm).toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /delete existing app\?/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /delete app/i }));
+
     await waitFor(() => expect(deleteApp).toHaveBeenCalledWith('1'));
     await waitFor(() => expect(screen.queryByText('Existing app')).not.toBeInTheDocument());
+  });
+
+  it('closes the delete modal without removing when cancelled', async () => {
+    fetchApps.mockResolvedValueOnce([
+      { _id: '1', name: 'Existing app', createdAt: '2024-06-01T00:00:00Z' },
+    ]);
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    await screen.findByText('Existing app');
+    await user.click(screen.getByRole('button', { name: /remove app/i }));
+
+    expect(screen.getByRole('dialog', { name: /delete existing app\?/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(deleteApp).not.toHaveBeenCalled();
   });
 
   it('opens an app modal and closes it with the close button', async () => {
