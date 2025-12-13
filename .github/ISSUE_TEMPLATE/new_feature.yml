@@ -29,6 +29,15 @@ body:
       required: true
 
   - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Describe the concrete effects this feature will have (users, systems, performance, risks reduced).
+      placeholder: e.g., "Reduces checkout drop-off by adding wallet support for mobile web users."
+    validations:
+      required: true
+
+  - type: textarea
     id: alternative
     attributes:
       label: Considered alternatives
@@ -36,15 +45,14 @@ body:
     validations:
       required: false
 
-  - type: dropdown
-    id: impact
+  - type: textarea
+    id: acceptance_criteria
     attributes:
-      label: Impact level
-      description: Importance or urgency of the feature
-      options:
-        - Low
-        - Medium
-        - High
-        - Critical
+      label: Acceptance criteria
+      description: Provide measurable, binary conditions to mark this issue complete.
+      value: |-
+        - [ ] The proposed behavior is available behind an appropriate guard/flag if needed
+        - [ ] User-facing scenarios succeed across supported environments
+        - [ ] Metrics/telemetry confirm the intended impact or baseline is captured
     validations:
-      required: false
+      required: true
