@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Card from './components/card/card.jsx';
 import AppModal from './components/app-modal/app-modal.jsx';
+import DeleteAppModal from './components/app-modal/delete-app-modal.jsx';
 import CreationApp from './components/creation-app/creation-app.jsx';
 import AppHeader from './components/header/header.jsx';
 import List from './components/list/list.jsx';
@@ -13,6 +14,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedApp, setSelectedApp] = useState(null);
+  const [appToDelete, setAppToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function loadApps() {
     try {
@@ -51,18 +54,28 @@ export default function App() {
     }
   }
 
-  async function removeApp(app) {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${app.name}"? This action cannot be undone.`
-    );
+  function requestAppRemoval(app) {
+    setAppToDelete(app);
+  }
 
-    if (!confirmed) return;
+  function closeDeleteModal() {
+    if (isDeleting) return;
+    setAppToDelete(null);
+  }
+
+  async function confirmRemoveApp() {
+    if (!appToDelete) return;
 
     try {
-      await deleteApp(app._id);
-      setApps((prev) => prev.filter((item) => item._id !== app._id));
+      setIsDeleting(true);
+      await deleteApp(appToDelete._id);
+      setApps((prev) => prev.filter((item) => item._id !== appToDelete._id));
+      setError('');
+      setAppToDelete(null);
     } catch (err) {
       setError(err?.response?.data?.error || 'Could not remove app');
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -85,10 +98,23 @@ export default function App() {
             error={error}
           />
 
-          <List apps={apps} onRemove={removeApp} showEmpty={!loading} onSelect={openApp} />
+          <List
+            apps={apps}
+            onRemove={requestAppRemoval}
+            showEmpty={!loading}
+            onSelect={openApp}
+          />
         </Card>
 
         {selectedApp && <AppModal app={selectedApp} onClose={closeApp} />}
+        {appToDelete && (
+          <DeleteAppModal
+            app={appToDelete}
+            onCancel={closeDeleteModal}
+            onConfirm={confirmRemoveApp}
+            loading={isDeleting}
+          />
+        )}
       </AppShell>
     </>
   );

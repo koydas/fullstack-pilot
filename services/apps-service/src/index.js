@@ -1,11 +1,16 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import morgan from 'morgan';
+import { services, findServiceByName } from './services/index.js';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Minimal .env loader to keep configuration in sync with docker-compose defaults
 function loadEnvFile(envFilePath) {
@@ -25,69 +30,62 @@ function loadEnvFile(envFilePath) {
     });
 }
 
+loadEnvFile(path.resolve(__dirname, '..', '..', '.env'));
 loadEnvFile(path.resolve(process.cwd(), '.env'));
 
 const PORT = process.env.PORT || 4000;
 const DEFAULT_MONGODB_URI = 'mongodb://localhost:27017/fullstack-pilot';
 const MONGODB_URI = (process.env.MONGODB_URI || DEFAULT_MONGODB_URI).trim();
 
+const SERVICE_NAME = process.env.SERVICE_NAME || process.env.SERVICE;
+const SERVICE_BASE_PATH = process.env.SERVICE_BASE_PATH;
+
+function resolveServices() {
+  if (!SERVICE_NAME) {
+    return services;
+  }
+
+  const normalizedName = SERVICE_NAME.trim().toLowerCase();
+  const service = findServiceByName(normalizedName);
+
+  if (!service) {
+    throw new Error(
+      `Unknown service "${SERVICE_NAME}". Available services: ${services
+        .map((svc) => svc.name)
+        .join(', ')}`
+    );
+  }
+
+  return [service];
+}
+
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-const appSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  { timestamps: true }
-);
+let activeServices;
 
-const App = mongoose.model('App', appSchema);
+try {
+  activeServices = resolveServices();
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 
-const asyncHandler = (handler) => async (req, res, next) => {
-  try {
-    await handler(req, res, next);
-  } catch (error) {
-    next(error);
+activeServices.forEach(({ basePath, router, name }) => {
+  const mountPath =
+    SERVICE_BASE_PATH?.trim() ||
+    (SERVICE_NAME ? '/' : basePath);
+
+  if (!mountPath.startsWith('/')) {
+    throw new Error(
+      `Invalid mount path for service "${name}": ${mountPath}. Paths must start with '/'.`
+    );
   }
-};
 
-app.get(
-  '/api/apps',
-  asyncHandler(async (_req, res) => {
-    const apps = await App.find().sort({ createdAt: -1 });
-    res.json(apps);
-  })
-);
-
-app.post(
-  '/api/apps',
-  asyncHandler(async (req, res) => {
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'App name is required.' });
-    }
-
-    const appRecord = await App.create({ name: name.trim() });
-    res.status(201).json(appRecord);
-  })
-);
-
-app.delete(
-  '/api/apps/:id',
-  asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const appRecord = await App.findByIdAndDelete(id);
-    if (!appRecord) {
-      return res.status(404).json({ error: 'App not found.' });
-    }
-    res.status(204).send();
-  })
-);
+  console.log(`Registering service "${name}" at ${mountPath}`);
+  app.use(mountPath, router);
+});
 
 app.use((err, _req, res, _next) => {
   console.error('Unhandled error:', err);

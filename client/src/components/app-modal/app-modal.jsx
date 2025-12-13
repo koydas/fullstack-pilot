@@ -83,7 +83,7 @@ export default function AppModal({ app, onClose }) {
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                $active={activeTab === tab.id}
+                data-active={activeTab === tab.id}
               >
                 {tab.label}
               </TabButton>
