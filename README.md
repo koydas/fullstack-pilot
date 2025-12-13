@@ -30,12 +30,12 @@ MONGODB_URI=mongodb://localhost:27017/fullstack-pilot
 PORT=4000
 ```
 
-### 3) Start the backend
+### 3) Start all services
+Run every service located under `/services` with a single command from the repository root:
 ```bash
-cd services/apps-service
-npm run dev
+npm run start:services
 ```
-The API will be available at `http://localhost:4000/api`.
+Each service uses its own `npm run dev` (or `npm start`) script, and the apps service listens on `http://localhost:4000/api` by default.
 
 ### 4) Start the frontend
 ```bash
