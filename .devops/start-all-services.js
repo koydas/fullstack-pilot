@@ -6,6 +6,14 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const servicesRoot = join(__dirname, '..', 'services');
 
+const npmExecPath = process.env.npm_execpath;
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
+const spawnCommand = npmExecPath && npmExecPath.endsWith('.js') ? process.execPath : npmCommand;
+const spawnArgs = npmExecPath && npmExecPath.endsWith('.js')
+  ? [npmExecPath, 'run']
+  : ['run'];
+
 const serviceDirectories = readdirSync(servicesRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
@@ -34,7 +42,7 @@ for (const serviceName of serviceDirectories) {
     continue;
   }
 
-  const child = spawn('npm', ['run', scriptName], {
+  const child = spawn(spawnCommand, [...spawnArgs, scriptName], {
     cwd: servicePath,
     stdio: 'inherit',
     env: { ...process.env },
