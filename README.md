@@ -58,6 +58,39 @@ flowchart LR
 - `POST /api/projects` – create a project. Body: `{ "name": "My project" }`
 - `DELETE /api/projects/:id` – delete a project by id
 
+## Deployment notes
+- Set `MONGODB_URI` to your managed MongoDB connection string.
+- Use `npm run build` inside `client/` to create a production build. Serve the static assets with your preferred host and point them at the running backend.
+
+## API smoke tests
+Each service ships with a self-contained smoke test script that exercises POST → GET → DELETE. Make sure the target service (and any backing datastore) is running first.
+
+- **Apps service** (Node + MongoDB):
+  ```bash
+  ./scripts/api-smoke.sh
+  ```
+  Override the target with `APPS_API_URL` or `API_URL`:
+  ```bash
+  APPS_API_URL="https://example.com/api/apps" ./scripts/api-smoke.sh
+  ```
+
+- **Services service** (Flask):
+  ```bash
+  ./scripts/services-smoke.sh
+  ```
+  Override the target with `SERVICES_API_URL`:
+  ```bash
+  SERVICES_API_URL="https://example.com/api/services" ./scripts/services-smoke.sh
+  ```
+
+- **Dependancies service** (.NET):
+  ```bash
+  ./scripts/dependancies-smoke.sh
+  ```
+  Override the target with `DEPENDANCIES_API_URL`:
+  ```bash
+  DEPENDANCIES_API_URL="https://example.com/api/dependancies" ./scripts/dependancies-smoke.sh
+  ```
 ## Roadmap
 Use [GitHub Issues](https://github.com/AndrewHulme/fullstack-pilot/issues) as the living backlog and evaluation checklist.
 
