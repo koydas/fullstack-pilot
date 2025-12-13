@@ -10,11 +10,10 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 
 ## Project structure
 - `client/` – React UI built with Vite.
-
 - `services/` – Folder containing independently deployable services (e.g. `apps-service/`).
   - `apps-service/`  – Standalone nodejs API with mongo-db database.
   - `services-service/` – Standalone Flask API with in-memory CRUD endpoints.
-
+  - `dependancies-service/` – .NET 8 Web API (contrôleurs) exposant des endpoints CRUD avec stockage en mémoire.
 
 ## Getting started
 
@@ -56,6 +55,18 @@ From the repository root you can also start the Flask service with npm:
 ```bash
 npm run start:services-service
 ```
+
+### Optional: run the .NET CRUD service
+```bash
+cd dependancies-service
+dotnet restore
+dotnet run
+```
+Or start it from the repo root with the provided npm script:
+```bash
+npm run start:dependancies-service
+```
+It exposes `/api/dependancies` routes backed by an in-memory repository (see `dependancies-service/README.md`).
 
 ### 4) Start the frontend
 ```bash
