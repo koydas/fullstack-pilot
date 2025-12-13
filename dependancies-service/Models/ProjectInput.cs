@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DotNetService.Models;
+namespace DependanciesService.Models;
 
 public class ProjectInput
 {

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using DotNetService.Models;
+using DependanciesService.Models;
 
-namespace DotNetService.Services;
+namespace DependanciesService.Services;
 
 public interface IProjectRepository
 {

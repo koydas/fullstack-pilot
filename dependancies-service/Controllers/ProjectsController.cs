@@ -1,8 +1,8 @@
-using DotNetService.Models;
-using DotNetService.Services;
+using DependanciesService.Models;
+using DependanciesService.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DotNetService.Controllers;
+namespace DependanciesService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

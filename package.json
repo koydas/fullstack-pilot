@@ -15,7 +15,7 @@
     "test:all": "npm run test:server && npm run test:client",
     "start:backend": "cd server && npm run dev",
     "start:client": "cd client && npm run dev",
-    "start:dotnet-service": "cd dotnet-service && dotnet run"
+    "start:dependancies-service": "cd dependancies-service && dotnet run"
   },
   "repository": {
     "type": "git",

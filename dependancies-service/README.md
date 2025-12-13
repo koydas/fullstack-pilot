@@ -1,4 +1,4 @@
-# DotNetService
+# Dependancies Service
 
 Un service API en .NET 8 basé sur des contrôleurs qui expose des opérations CRUD pour des projets.
 Le stockage est en mémoire pour faciliter les tests locaux.
@@ -8,7 +8,7 @@ Le stockage est en mémoire pour faciliter les tests locaux.
 
 ## Lancer le service
 ```bash
-cd dotnet-service
+cd dependancies-service
 dotnet restore
 dotnet run
 ```

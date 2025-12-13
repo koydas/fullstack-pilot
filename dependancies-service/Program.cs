@@ -1,4 +1,4 @@
-using DotNetService.Services;
+using DependanciesService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

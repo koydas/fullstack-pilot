@@ -1,4 +1,4 @@
-namespace DotNetService.Models;
+namespace DependanciesService.Models;
 
 public record Project
 {
