@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fullstack-pilot-dependancies-service
+  namespace: fullstack-pilot
+  labels:
+    app: fullstack-pilot-dependancies-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fullstack-pilot-dependancies-service
+  template:
+    metadata:
+      labels:
+        app: fullstack-pilot-dependancies-service
+    spec:
+      containers:
+        - name: dependancies-service
+          image: ghcr.io/koydas/fullstack-pilot/dependancies-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4003
+          envFrom:
+            - configMapRef:
+                name: dependancies-service-config
+            - secretRef:
+                name: dependancies-service-secrets
+          readinessProbe:
+            tcpSocket:
+              port: 4003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4003
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
