@@ -8,6 +8,23 @@ A minimal full-stack starter that pairs a React frontend with a Node.js + MongoD
 
 > Tip: If you prefer Docker, a Compose setup is available in `mongo-db/`. Run `cd mongo-db && docker compose up -d` to start a local MongoDB instance at `mongodb://localhost:27017/fullstack-pilot`.
 
+## One-command local environment
+
+Bring up the full stack (MongoDB, all APIs, and the production build of the frontend) with Docker Compose from the repository root:
+
+```bash
+docker compose up --build
+```
+
+Services are available at:
+- Frontend: http://localhost:5173/
+- Apps API: http://localhost:4000/api
+- Flask services API: http://localhost:5000/api
+- .NET dependencies API: http://localhost:6000/swagger
+- MongoDB: mongodb://localhost:27017/fullstack-pilot
+
+To rebuild after code changes, run `docker compose up --build` again. Use `docker compose down` to stop and remove the containers.
+
 ## Project structure
 - `client/` – React UI built with Vite.
 - `services/` – Folder containing independently deployable services (e.g. `apps-service/`).
