@@ -31,7 +31,7 @@ services:
       - "5000:5000"
 
   dependancies-service:
-    build: ./dependancies-service
+    build: ./services/dependancies-service
     container_name: fullstack-pilot-dependancies-service
     environment:
       ASPNETCORE_URLS: http://+:6000

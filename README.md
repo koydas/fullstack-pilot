@@ -71,7 +71,7 @@ To rebuild after code changes, run `docker compose up --build` again. Use `docke
 - `client/` – React UI built with Vite.
 - `apps-service/` – Node/Express service uses MongoDB.
 - `services-service/` – Flask CRUD sample.
-- `dependancies-service/` – .NET 8 CRUD sample.
+- `services/dependancies-service/` – .NET 8 CRUD sample.
 - `mongo-db/` – Docker Compose for local MongoDB.
 
 ## API overview (apps-service)

@@ -8,7 +8,7 @@ Le stockage est en mémoire pour faciliter les tests locaux.
 
 ## Lancer le service
 ```bash
-cd dependancies-service
+cd services/dependancies-service
 dotnet restore
 dotnet run
 ```
