@@ -23,7 +23,7 @@ services:
       - "4000:4000"
 
   services-service:
-    build: ./services-service
+    build: ./services/services-service
     container_name: fullstack-pilot-services-service
     environment:
       PORT: 5000

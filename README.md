@@ -70,7 +70,7 @@ To rebuild after code changes, run `docker compose up --build` again. Use `docke
 ## Project structure
 - `client/` – React UI built with Vite.
 - `apps-service/` – Node/Express service uses MongoDB.
-- `services-service/` – Flask CRUD sample.
+- `services/services-service/` – Flask CRUD sample.
 - `dependancies-service/` – .NET 8 CRUD sample.
 - `mongo-db/` – Docker Compose for local MongoDB.
 

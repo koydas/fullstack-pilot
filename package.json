@@ -16,7 +16,7 @@
     "start:apps-service": "cd services/apps-service && npm run dev",
     "start:client": "cd client && npm run dev",
     "start:services": "node .devops/start-all-services.js",
-    "start:services-service": "cd services-service && python app.py",
+    "start:services-service": "cd services/services-service && python app.py",
     "start:dependancies-service": "cd dependancies-service && dotnet run"
   },
   "repository": {
