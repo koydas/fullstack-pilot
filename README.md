@@ -43,7 +43,7 @@ flowchart LR
    ```
 3. **Start the core stack** (Node API + Mongo + React)
    ```bash
-   cd databases/mongo-db && docker compose up -d && cd ../..
+   npm run start:mongo-db
    npm run start:services
    cd client && npm run dev -- --host
    ```
@@ -52,6 +52,7 @@ flowchart LR
 4. **Optional services**
    - Flask: `npm run start:services-service` (`http://localhost:5000/api`)
    - .NET: `npm run start:dependancies-service` (routes `/api/dependancies`, Swagger: `http://localhost:6060/swagger`)
+   - MongoDB helper: `npm run start:mongo-db` (connection string `mongodb://localhost:27017/fullstack-pilot`)
    - PostgreSQL helper: `npm run start:postgre` (connection string `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`)
 
 ### One-command launch
@@ -80,6 +81,7 @@ Each service includes a self-contained POST → GET → DELETE script (see [.dev
 - Node/Mongo: `./scripts/api-smoke.sh` (env override: `APPS_API_URL` or `API_URL`)
 - Flask: `./scripts/services-smoke.sh` (override: `SERVICES_API_URL`)
 - .NET: `./scripts/dependancies-smoke.sh` (override: `DEPENDANCIES_API_URL`)
+- MongoDB helper reachability: included in `npm run test:smoke` (override with `SMOKE_MONGO_URL`)
 - PostgreSQL helper reachability: included in `npm run test:smoke` (override with `SMOKE_POSTGRES_URL`)
 
 ## Deploying to production

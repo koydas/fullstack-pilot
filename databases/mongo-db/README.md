@@ -2,8 +2,14 @@
 
 A lightweight MongoDB setup for local development. It uses Docker Compose to start a MongoDB instance that matches the default connection string in this project (`mongodb://localhost:27017/fullstack-pilot`).
 
-## Prerequisites
-- Docker Desktop or Docker Engine with Compose plugin installed.
+## Quick start
+Use the convenience script to build and launch MongoDB with Compose:
+
+```bash
+npm run start:mongo-db
+```
+
+The database will listen on `mongodb://localhost:27017` with a default database named `fullstack-pilot`. Smoke tests will attempt to auto-start this helper (unless `SMOKE_MONGO_SKIP_AUTOSTART=true`), so Docker must be available.
 
 ## Use the packaged image
 The GitHub Actions workflow `Package MongoDB image` (in `.github/workflows/mongo-db.yml`) builds a self-contained Docker image and uploads it as an artifact named `mongo-db-docker-package`.
@@ -22,17 +28,6 @@ gunzip -c mongo-db-image.tar.gz | docker load
 
 ```bash
 docker compose -f mongo-db-compose.yml up -d
-```
-
-The database will listen on `mongodb://localhost:27017` with a default database named `fullstack-pilot`.
-
-## Build locally instead of using the artifact
-If you prefer to build the image locally, run from the repository root:
-
-```bash
-docker build -t fullstack-pilot-mongo:latest databases/mongo-db
-cd databases/mongo-db
-docker compose up -d
 ```
 
 ## Stopping the database
