@@ -1,5 +1,5 @@
 name: ✨ Feature Request
-description: Suggest an idea or improvement
+description: Propose a new feature in a few quick steps
 title: "[FEATURE] - "
 labels: [enhancement]
 assignees:
@@ -9,50 +9,43 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please describe your proposal clearly 🙌
+        Thanks for sharing your idea! Please outline the need and your proposed solution. 🙌
 
-  - type: input
-    id: context
+  - type: textarea
+    id: problem
     attributes:
-      label: Context
-      description: Why is this feature needed?
-      placeholder: e.g. To improve the user experience...
+      label: Problem to solve
+      description: What need or pain point does this address?
+      placeholder: e.g. Night users find the interface too bright
     validations:
       required: true
 
-  - type: textarea
-    id: proposal
-    attributes:
-      label: Proposal
-      placeholder: Describe the feature and its expected behavior
-    validations:
-      required: true
-
-  - type: textarea
+  - type: dropdown
     id: impact
     attributes:
       label: Impact
-      description: Describe the concrete effects this feature will have (users, systems, performance, risks reduced).
-      placeholder: e.g., "Reduces checkout drop-off by adding wallet support for mobile web users."
+      description: How significant is this change?
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
     validations:
       required: true
 
   - type: textarea
-    id: alternative
+    id: solution
     attributes:
-      label: Considered alternatives
-      placeholder: Are there other ways to solve this need?
+      label: Proposed solution
+      description: Describe the approach or expected behavior.
+      placeholder: e.g. Add a button to enable a persistent dark theme
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Constraints or notes
+      description: Dependencies, quick alternatives, or useful links (optional).
     validations:
       required: false
-
-  - type: textarea
-    id: acceptance_criteria
-    attributes:
-      label: Acceptance criteria
-      description: Provide measurable, binary conditions to mark this issue complete.
-      value: |-
-        - [ ] The proposed behavior is available behind an appropriate guard/flag if needed
-        - [ ] User-facing scenarios succeed across supported environments
-        - [ ] Metrics/telemetry confirm the intended impact or baseline is captured
-    validations:
-      required: true
