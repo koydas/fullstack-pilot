@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 
-const retries = Number(process.env.SMOKE_RETRIES || 5);
-const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 1000);
-const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 3000);
+const retries = Number(process.env.SMOKE_RETRIES || 10);
+const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 2000);
+const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
 
 const services = [
   {

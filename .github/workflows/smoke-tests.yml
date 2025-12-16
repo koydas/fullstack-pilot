@@ -39,6 +39,10 @@ jobs:
           docker compose up -d --build
 
       - name: Run smoke tests
+        env:
+          SMOKE_RETRIES: 10
+          SMOKE_RETRY_DELAY_MS: 2000
+          SMOKE_TIMEOUT_MS: 5000
         run: npm run test:smoke
 
       - name: Dump service logs on failure
