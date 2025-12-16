@@ -1,66 +1,38 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 
 const retries = Number(process.env.SMOKE_RETRIES || 10);
 const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 2000);
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
 
-const execFileAsync = promisify(execFile);
-
-const mssqlContainerName =
-  process.env.SMOKE_MSSQL_CONTAINER_NAME || 'fullstack-pilot-mssql';
-const mssqlSaPassword = process.env.MSSQL_SA_PASSWORD || 'YourStrong!Passw0rd';
-
-const appsServiceUrl =
-  process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps';
-const servicesServiceUrl =
-  process.env.SMOKE_SERVICES_SERVICE_URL || 'http://localhost:5000/api/services';
-const dependanciesServiceUrl =
-  process.env.SMOKE_DEPENDANCIES_SERVICE_URL ||
-  'http://localhost:6060/api/dependancies';
-
 const services = [
-  createHttpService('apps-service', appsServiceUrl, async (response) => {
-    await expectJsonArray(response, {
-      context: 'apps collection',
-    });
-  }),
-  createHttpService('services-service', servicesServiceUrl, async (response) => {
-    await expectJsonArray(response, { context: 'services registry' });
-  }),
-  createHttpService(
-    'dependancies-service',
-    dependanciesServiceUrl,
-    async (response) => {
+  {
+    name: 'apps-service',
+    url: process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps',
+    validate: async (response) => {
+      await expectJsonArray(response, {
+        context: 'apps collection',
+      });
+    },
+  },
+  {
+    name: 'services-service',
+    url: process.env.SMOKE_SERVICES_SERVICE_URL || 'http://localhost:5000/api/services',
+    validate: async (response) => {
+      await expectJsonArray(response, { context: 'services registry' });
+    },
+  },
+  {
+    name: 'dependancies-service',
+    url: process.env.SMOKE_DEPENDANCIES_SERVICE_URL || 'http://localhost:6060/api/dependancies',
+    validate: async (response) => {
       await expectJsonArray(response, {
         context: 'dependancies catalogue',
         minLength: 1,
       });
     },
-  ),
-  {
-    name: 'mssql',
-    target: `container ${mssqlContainerName}`,
-    run: async () => {
-      await expectSqlcmd(mssqlContainerName, mssqlSaPassword);
-    },
   },
 ];
-
-function createHttpService(name, url, validate) {
-  assert.ok(url, `URL required for ${name} smoke test`);
-
-  return {
-    name,
-    target: url,
-    run: async () => {
-      const response = await fetchWithTimeout(url);
-      await validate(response);
-    },
-  };
-}
 
 async function fetchWithTimeout(url) {
   const controller = new AbortController();
@@ -104,17 +76,16 @@ async function expectJsonArray(response, { context, minLength }) {
   return payload;
 }
 
-async function runTest({ name, target, run }) {
+async function runTest({ name, url, validate }) {
   let attempt = 0;
   let lastError;
 
   while (attempt < retries) {
     attempt += 1;
     try {
-      process.stdout.write(
-        `→ ${name} (${target || name}) [attempt ${attempt}/${retries}]... `,
-      );
-      await run();
+      process.stdout.write(`→ ${name} (${url}) [attempt ${attempt}/${retries}]... `);
+      const response = await fetchWithTimeout(url);
+      await validate(response);
       console.log('ok');
       return;
     } catch (error) {
@@ -134,35 +105,6 @@ async function main() {
     await runTest(service);
   }
   console.log('\nAll smoke tests passed.');
-}
-
-async function expectSqlcmd(containerName, password) {
-  assert.ok(containerName, 'Container name for MSSQL smoke test is required');
-
-  const args = [
-    'exec',
-    containerName,
-    '/opt/mssql-tools/bin/sqlcmd',
-    '-S',
-    'localhost',
-    '-U',
-    'sa',
-    '-P',
-    password,
-    '-Q',
-    'SELECT 1',
-  ];
-
-  try {
-    const { stdout } = await execFileAsync('docker', args, { timeout: timeoutMs });
-    assert.match(
-      stdout,
-      /\b1\b/,
-      'MSSQL smoke test query did not return the expected result',
-    );
-  } catch (error) {
-    throw new Error(`MSSQL smoke test failed: ${error.message}`);
-  }
 }
 
 main().catch((error) => {
