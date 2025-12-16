@@ -52,6 +52,7 @@ flowchart LR
 4. **Optional services**
    - Flask: `npm run start:services-service` (`http://localhost:5000/api`)
    - .NET: `npm run start:dependancies-service` (routes `/api/dependancies`, Swagger: `http://localhost:6060/swagger`)
+   - PostgreSQL helper: `npm run start:postgre` (connection string `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`)
 
 ### One-command launch
 ```bash
@@ -67,6 +68,7 @@ Rebuild after changes with `docker compose up --build`. Stop with `docker compos
 - `services/dependancies-service/` – .NET 8 CRUD service. Details in the [dependancies-service README](services/dependancies-service/README.md).
 - `services/` – cross-service scripts and notes (see [services README](services/README.md)).
 - `databases/mongo-db/` – docker-compose for local Mongo (see [mongo-db README](databases/mongo-db/README.md)).
+- `databases/postgre/` – Dockerfile for a local PostgreSQL helper (see [postgre README](databases/postgre/README.md)).
 
 ## Primary API (apps-service)
 - `GET /api/apps` – list projects
@@ -78,6 +80,7 @@ Each service includes a self-contained POST → GET → DELETE script (see [.dev
 - Node/Mongo: `./scripts/api-smoke.sh` (env override: `APPS_API_URL` or `API_URL`)
 - Flask: `./scripts/services-smoke.sh` (override: `SERVICES_API_URL`)
 - .NET: `./scripts/dependancies-smoke.sh` (override: `DEPENDANCIES_API_URL`)
+- PostgreSQL helper reachability: included in `npm run test:smoke` (override with `SMOKE_POSTGRES_URL`)
 
 ## Deploying to production
 - Point `MONGODB_URI` to your managed cluster.
