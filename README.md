@@ -60,11 +60,12 @@ Exposes: frontend (5173), Node API (4000), Flask API (5000), .NET API (6060), Mo
 Rebuild after changes with `docker compose up --build`. Stop with `docker compose down`.
 
 ## Directory tour
-- `client/` – React + TypeScript UI built with Vite.
+- `client/` – React + TypeScript UI built with Vite. See the [client README](client/README.md).
 - `apps-service/` – Node/Express API connected to MongoDB.
-- `services/services-service/` – Flask CRUD service.
-- `services/dependancies-service/` – .NET 8 CRUD service.
-- `mongo-db/` – docker-compose for local Mongo.
+- `services/services-service/` – Flask CRUD service. Overview in the [services-service README](services/services-service/README.md).
+- `services/dependancies-service/` – .NET 8 CRUD service. Details in the [dependancies-service README](services/dependancies-service/README.md).
+- `services/` – cross-service scripts and notes (see [services README](services/README.md)).
+- `mongo-db/` – docker-compose for local Mongo (see [mongo-db README](mongo-db/README.md)).
 
 ## Primary API (apps-service)
 - `GET /api/projects` – list projects
