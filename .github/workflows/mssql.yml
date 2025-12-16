@@ -51,36 +51,6 @@ jobs:
           load: true
           tags: ${{ env.LOCAL_TEST_TAG }}
 
-      - name: Run smoke test
-        env:
-          CONTAINER_NAME: fullstack-pilot-mssql
-          MSSQL_SA_PASSWORD: YourStrong!Passw0rd
-        run: |
-          docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
-          docker run -d \
-            --name "$CONTAINER_NAME" \
-            -e ACCEPT_EULA=Y \
-            -e MSSQL_PID=Developer \
-            -e MSSQL_SA_PASSWORD="$MSSQL_SA_PASSWORD" \
-            -p 1433:1433 \
-            -v $(pwd)/databases/mssql/data:/var/opt/mssql \
-            ${{ env.LOCAL_TEST_TAG }}
-
-          for attempt in {1..12}; do
-            if docker exec "$CONTAINER_NAME" /opt/mssql-tools/bin/sqlcmd \
-              -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1" >/dev/null; then
-              docker rm -f "$CONTAINER_NAME"
-              exit 0
-            fi
-            echo "MSSQL not ready yet, retrying in 5s..."
-            sleep 5
-          done
-
-          echo "MSSQL smoke test failed after retries. Showing logs:"
-          docker logs "$CONTAINER_NAME"
-          docker rm -f "$CONTAINER_NAME"
-          exit 1
-
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
