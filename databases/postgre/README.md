@@ -18,6 +18,8 @@ Or reuse the convenience script that builds and starts the container:
 npm run start:postgre
 ```
 
+The script removes any stopped `fullstack-pilot-postgres` container before launching a fresh instance to avoid name conflicts.
+
 ## Run PostgreSQL
 Launch a container using the freshly built image:
 
@@ -33,6 +35,7 @@ docker run -d \
 ```
 
 The instance will listen on `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`.
+Smoke tests will attempt to auto-start this helper (unless `SMOKE_POSTGRES_SKIP_AUTOSTART=true`), so Docker must be available.
 
 Smoke tests include a reachability probe for this PostgreSQL helper. Override the target with `SMOKE_POSTGRES_URL` if needed.
 

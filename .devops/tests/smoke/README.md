@@ -14,6 +14,8 @@ Environment variables can override the target URLs:
 - `SMOKE_SERVICES_SERVICE_URL` (default: `http://localhost:5000/api/services`)
 - `SMOKE_DEPENDANCIES_SERVICE_URL` (default: `http://localhost:6060/api/dependancies`)
 - `SMOKE_POSTGRES_URL` (default: `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`)
+- `SMOKE_POSTGRES_CONTAINER` (default: `fullstack-pilot-postgres`) – container name to reuse when auto-starting
+- `SMOKE_POSTGRES_SKIP_AUTOSTART` (set to `true` to disable) – skip attempts to start the local helper container
 
 Optional tuning variables:
 

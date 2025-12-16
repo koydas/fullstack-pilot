@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
 import net from 'node:net';
 
 const retries = Number(process.env.SMOKE_RETRIES || 10);
@@ -40,7 +41,11 @@ const services = [
   },
   {
     name: 'postgres',
-    run: () => runPostgresCheck(process.env.SMOKE_POSTGRES_URL || 'postgres://fullstack:fullstack@localhost:5432/fullstack-pilot'),
+    setup: () => ensurePostgresHelper(process.env.SMOKE_POSTGRES_URL),
+    run: () =>
+      runPostgresCheck(
+        process.env.SMOKE_POSTGRES_URL || 'postgres://fullstack:fullstack@localhost:5432/fullstack-pilot',
+      ),
   },
 ];
 
@@ -86,6 +91,64 @@ async function runPostgresCheck(connectionString) {
   });
 }
 
+async function ensurePostgresHelper(connectionString) {
+  if (process.env.SMOKE_POSTGRES_SKIP_AUTOSTART === 'true') {
+    return;
+  }
+
+  const target = connectionString || 'postgres://fullstack:fullstack@localhost:5432/fullstack-pilot';
+
+  try {
+    await runPostgresCheck(target);
+    return; // already reachable
+  } catch (error) {
+    console.warn(`PostgreSQL not reachable yet (${error.message}). Attempting to start helper container...`);
+  }
+
+  if (!isDockerAvailable()) {
+    console.warn('Docker is not available; skipping PostgreSQL helper auto-start.');
+    return;
+  }
+
+  const containerName = process.env.SMOKE_POSTGRES_CONTAINER || 'fullstack-pilot-postgres';
+
+  // If the container exists but is stopped, try starting it first.
+  if (isContainerPresent(containerName)) {
+    try {
+      childProcess.execSync(`docker start ${containerName}`, { stdio: 'ignore' });
+      return;
+    } catch (error) {
+      console.warn(`Failed to start existing PostgreSQL container ${containerName}: ${error.message}`);
+    }
+  }
+
+  try {
+    childProcess.execSync('npm run start:postgre', { stdio: 'inherit' });
+  } catch (error) {
+    console.warn(`Unable to auto-start PostgreSQL helper via npm script: ${error.message}`);
+  }
+}
+
+function isDockerAvailable() {
+  try {
+    childProcess.execSync('docker info', { stdio: 'ignore' });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function isContainerPresent(name) {
+  try {
+    const result = childProcess.execSync(`docker ps -a --filter name=^/${name}$ --format "{{.Names}}"`, {
+      encoding: 'utf8',
+    });
+    return result.trim().length > 0;
+  } catch (error) {
+    return false;
+  }
+}
+
 async function expectJsonArray(response, { context, minLength }) {
   assert.ok(response, `No response received for ${context}`);
   assert.ok(
@@ -112,9 +175,13 @@ async function expectJsonArray(response, { context, minLength }) {
   return payload;
 }
 
-async function runTest({ name, run }) {
+async function runTest({ name, run, setup }) {
   let attempt = 0;
   let lastError;
+
+  if (typeof setup === 'function') {
+    await setup();
+  }
 
   while (attempt < retries) {
     attempt += 1;
