@@ -13,48 +13,33 @@ const mssqlContainerName =
   process.env.SMOKE_MSSQL_CONTAINER_NAME || 'fullstack-pilot-mssql';
 const mssqlSaPassword = process.env.MSSQL_SA_PASSWORD || 'YourStrong!Passw0rd';
 
+const appsServiceUrl =
+  process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps';
+const servicesServiceUrl =
+  process.env.SMOKE_SERVICES_SERVICE_URL || 'http://localhost:5000/api/services';
+const dependanciesServiceUrl =
+  process.env.SMOKE_DEPENDANCIES_SERVICE_URL ||
+  'http://localhost:6060/api/dependancies';
+
 const services = [
-  {
-    name: 'apps-service',
-    target: process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps',
-    run: async () => {
-      const response = await fetchWithTimeout(
-        process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps',
-      );
-      await expectJsonArray(response, {
-        context: 'apps collection',
-      });
-    },
-  },
-  {
-    name: 'services-service',
-    target:
-      process.env.SMOKE_SERVICES_SERVICE_URL ||
-      'http://localhost:5000/api/services',
-    run: async () => {
-      const response = await fetchWithTimeout(
-        process.env.SMOKE_SERVICES_SERVICE_URL ||
-          'http://localhost:5000/api/services',
-      );
-      await expectJsonArray(response, { context: 'services registry' });
-    },
-  },
-  {
-    name: 'dependancies-service',
-    target:
-      process.env.SMOKE_DEPENDANCIES_SERVICE_URL ||
-      'http://localhost:6060/api/dependancies',
-    run: async () => {
-      const response = await fetchWithTimeout(
-        process.env.SMOKE_DEPENDANCIES_SERVICE_URL ||
-          'http://localhost:6060/api/dependancies',
-      );
+  createHttpService('apps-service', appsServiceUrl, async (response) => {
+    await expectJsonArray(response, {
+      context: 'apps collection',
+    });
+  }),
+  createHttpService('services-service', servicesServiceUrl, async (response) => {
+    await expectJsonArray(response, { context: 'services registry' });
+  }),
+  createHttpService(
+    'dependancies-service',
+    dependanciesServiceUrl,
+    async (response) => {
       await expectJsonArray(response, {
         context: 'dependancies catalogue',
         minLength: 1,
       });
     },
-  },
+  ),
   {
     name: 'mssql',
     target: `container ${mssqlContainerName}`,
@@ -63,6 +48,19 @@ const services = [
     },
   },
 ];
+
+function createHttpService(name, url, validate) {
+  assert.ok(url, `URL required for ${name} smoke test`);
+
+  return {
+    name,
+    target: url,
+    run: async () => {
+      const response = await fetchWithTimeout(url);
+      await validate(response);
+    },
+  };
+}
 
 async function fetchWithTimeout(url) {
   const controller = new AbortController();
