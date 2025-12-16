@@ -67,7 +67,8 @@ jobs:
             ${{ env.LOCAL_TEST_TAG }}
 
           for attempt in {1..12}; do
-            if ./databases/mssql/smoke-test.sh; then
+            if docker exec "$CONTAINER_NAME" /opt/mssql-tools/bin/sqlcmd \
+              -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -Q "SELECT 1" >/dev/null; then
               docker rm -f "$CONTAINER_NAME"
               exit 0
             fi

@@ -53,10 +53,14 @@ docker run -d \
 After the container is running, verify it responds to queries:
 
 ```bash
-databases/mssql/smoke-test.sh
+docker exec fullstack-pilot-mssql /opt/mssql-tools/bin/sqlcmd \
+  -S localhost -U sa -P "${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}" \
+  -Q "SELECT 1" || {
+  echo "MSSQL is not responding yet" && exit 1
+}
 ```
 
-The script expects the container to be named `fullstack-pilot-mssql` and uses `MSSQL_SA_PASSWORD` for authentication.
+The command expects the container to be named `fullstack-pilot-mssql` and uses `MSSQL_SA_PASSWORD` for authentication.
 
 ## Stop the database
 ```bash
