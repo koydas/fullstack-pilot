@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: fullstack-pilot-postgres:latest
+    build: .
+    container_name: fullstack-pilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fullstack-pilot
+      POSTGRES_USER: fullstack
+      POSTGRES_PASSWORD: fullstack
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data

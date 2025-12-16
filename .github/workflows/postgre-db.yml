@@ -1,0 +1,36 @@
+name: Package PostgreSQL image
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "databases/postgre/**"
+      - ".github/workflows/postgre-db.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build PostgreSQL Docker image
+        run: |
+          docker build -t fullstack-pilot-postgres:latest databases/postgre
+
+      - name: Export Docker image
+        run: |
+          docker save fullstack-pilot-postgres:latest | gzip > postgre-db-image.tar.gz
+          cp databases/postgre/docker-compose.yml postgre-db-compose.yml
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgre-docker-package
+          path: |
+            postgre-db-image.tar.gz
+            postgre-db-compose.yml
+          retention-days: 7
