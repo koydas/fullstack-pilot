@@ -9,6 +9,11 @@ const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
 
 const services = [
   {
+    name: 'mongo-db',
+    setup: () => ensureMongoHelper(process.env.SMOKE_MONGO_URL),
+    run: () => runMongoCheck(process.env.SMOKE_MONGO_URL || 'mongodb://localhost:27017/fullstack-pilot'),
+  },
+  {
     name: 'apps-service',
     run: () =>
       runHttpTest(
@@ -91,6 +96,27 @@ async function runPostgresCheck(connectionString) {
   });
 }
 
+async function runMongoCheck(connectionString) {
+  const target = new URL(connectionString);
+  const host = target.hostname || 'localhost';
+  const port = Number(target.port) || 27017;
+
+  await new Promise((resolve, reject) => {
+    const socket = net.connect({ host, port }, () => {
+      socket.end();
+      resolve();
+    });
+
+    const onError = (error) => {
+      socket.destroy();
+      reject(new Error(`Unable to reach MongoDB at ${host}:${port} (${error.message})`));
+    };
+
+    socket.setTimeout(timeoutMs, () => onError(new Error(`timeout after ${timeoutMs}ms`)));
+    socket.on('error', onError);
+  });
+}
+
 async function ensurePostgresHelper(connectionString) {
   if (process.env.SMOKE_POSTGRES_SKIP_AUTOSTART === 'true') {
     return;
@@ -126,6 +152,43 @@ async function ensurePostgresHelper(connectionString) {
     childProcess.execSync('npm run start:postgre', { stdio: 'inherit' });
   } catch (error) {
     console.warn(`Unable to auto-start PostgreSQL helper via npm script: ${error.message}`);
+  }
+}
+
+async function ensureMongoHelper(connectionString) {
+  if (process.env.SMOKE_MONGO_SKIP_AUTOSTART === 'true') {
+    return;
+  }
+
+  const target = connectionString || 'mongodb://localhost:27017/fullstack-pilot';
+
+  try {
+    await runMongoCheck(target);
+    return; // already reachable
+  } catch (error) {
+    console.warn(`MongoDB not reachable yet (${error.message}). Attempting to start helper container...`);
+  }
+
+  if (!isDockerAvailable()) {
+    console.warn('Docker is not available; skipping MongoDB helper auto-start.');
+    return;
+  }
+
+  const containerName = process.env.SMOKE_MONGO_CONTAINER || 'fullstack-pilot-mongo';
+
+  if (isContainerPresent(containerName)) {
+    try {
+      childProcess.execSync(`docker start ${containerName}`, { stdio: 'ignore' });
+      return;
+    } catch (error) {
+      console.warn(`Failed to start existing MongoDB container ${containerName}: ${error.message}`);
+    }
+  }
+
+  try {
+    childProcess.execSync('npm run start:mongo-db', { stdio: 'inherit' });
+  } catch (error) {
+    console.warn(`Unable to auto-start MongoDB helper via npm script: ${error.message}`);
   }
 }
 

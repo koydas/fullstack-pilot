@@ -16,6 +16,9 @@ Environment variables can override the target URLs:
 - `SMOKE_POSTGRES_URL` (default: `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`)
 - `SMOKE_POSTGRES_CONTAINER` (default: `fullstack-pilot-postgres`) – container name to reuse when auto-starting
 - `SMOKE_POSTGRES_SKIP_AUTOSTART` (set to `true` to disable) – skip attempts to start the local helper container
+- `SMOKE_MONGO_URL` (default: `mongodb://localhost:27017/fullstack-pilot`)
+- `SMOKE_MONGO_CONTAINER` (default: `fullstack-pilot-mongo`) – container name to reuse when auto-starting
+- `SMOKE_MONGO_SKIP_AUTOSTART` (set to `true` to disable) – skip attempts to start the local helper container
 
 Optional tuning variables:
 
