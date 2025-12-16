@@ -34,7 +34,7 @@ Adopt a multi-service (microservices-style) architecture rather than a single mo
 
 **Decision**
 
-Use MongoDB as the primary operational database. All runtime services persist their data to MongoDB rather than local in-memory stores.
+Use per-service operational databases to align with each stack: MongoDB for the Node.js apps service, SQL Server for the .NET dependencies service, and PostgreSQL for the Python CRUD service. Each service owns its database engine rather than sharing a single store or relying on in-memory persistence.
 
 **Rationale**
 
