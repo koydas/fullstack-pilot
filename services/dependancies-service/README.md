@@ -41,3 +41,7 @@ Supprimer un projet :
 ```bash
 curl -X DELETE http://localhost:5000/api/dependancies/<ID>
 ```
+
+## Monitoring
+
+Une middleware simple journalise chaque requête HTTP avec la méthode, le chemin, le code de statut et le temps de réponse. Lors du lancement du service avec `dotnet run` ou via Docker Compose, ces événements apparaissent dans les logs de la console pour aider au suivi de la santé du service.
