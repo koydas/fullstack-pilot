@@ -1,0 +1,52 @@
+name: Smoke tests
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "docker-compose.yml"
+      - "services/**"
+      - "client/**"
+      - ".devops/tests/smoke/**"
+      - ".github/workflows/smoke-tests.yml"
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build and start stack
+        env:
+          COMPOSE_DOCKER_CLI_BUILD: 1
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker compose up -d --build
+
+      - name: Run smoke tests
+        run: npm run test:smoke
+
+      - name: Dump service logs on failure
+        if: failure()
+        run: |
+          docker compose ps
+          docker compose logs
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose down --volumes
