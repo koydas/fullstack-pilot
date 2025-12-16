@@ -8,78 +8,77 @@ namespace DependanciesService.Controllers;
 [Route("api/[controller]")]
 public class DependanciesController : ControllerBase
 {
-    private readonly IProjectRepository _repository;
+    private readonly IDependancyRepository _repository;
 
-    public DependanciesController(IProjectRepository repository)
+    public DependanciesController(IDependancyRepository repository)
     {
         _repository = repository;
     }
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<IEnumerable<Project>> GetProjects()
+    public async Task<ActionResult<IEnumerable<Dependancy>>> GetDependancies()
     {
-        return Ok(_repository.GetAll());
+        return Ok(await _repository.GetAllAsync());
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<Project> GetProject(Guid id)
+    public async Task<ActionResult<Dependancy>> GetDependancy(Guid id)
     {
-        var project = _repository.Get(id);
-        return project is null ? NotFound() : Ok(project);
+        var dependancy = await _repository.GetAsync(id);
+        return dependancy is null ? NotFound() : Ok(dependancy);
     }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<Project> CreateProject([FromBody] ProjectInput input)
+    public async Task<ActionResult<Dependancy>> CreateDependancy([FromBody] DependancyInput input)
     {
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
-        var project = new Project
+        var dependancy = new Dependancy
         {
             Name = input.Name.Trim(),
             Description = string.IsNullOrWhiteSpace(input.Description) ? null : input.Description.Trim()
         };
 
-        _repository.Create(project);
-        return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
+        await _repository.CreateAsync(dependancy);
+        return CreatedAtAction(nameof(GetDependancy), new { id = dependancy.Id }, dependancy);
     }
 
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public ActionResult<Project> UpdateProject(Guid id, [FromBody] ProjectInput input)
+    public async Task<ActionResult<Dependancy>> UpdateDependancy(Guid id, [FromBody] DependancyInput input)
     {
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
-        var updated = new Project
+        var updated = new Dependancy
         {
             Id = id,
             Name = input.Name.Trim(),
-            Description = string.IsNullOrWhiteSpace(input.Description) ? null : input.Description.Trim(),
-            CreatedAt = DateTime.UtcNow
+            Description = string.IsNullOrWhiteSpace(input.Description) ? null : input.Description.Trim()
         };
 
-        var result = _repository.Update(id, updated);
+        var result = await _repository.UpdateAsync(id, updated);
         return result is null ? NotFound() : Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public IActionResult DeleteProject(Guid id)
+    public async Task<IActionResult> DeleteDependancy(Guid id)
     {
-        var deleted = _repository.Delete(id);
+        var deleted = await _repository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
 }
