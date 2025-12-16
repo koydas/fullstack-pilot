@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "mongo-db/**"
+      - "databases/mongo-db/**"
       - ".github/workflows/mongo-db.yml"
   workflow_dispatch:
 
@@ -19,12 +19,12 @@ jobs:
 
       - name: Build MongoDB Docker image
         run: |
-          docker build -t fullstack-pilot-mongo:latest mongo-db
+          docker build -t fullstack-pilot-mongo:latest databases/mongo-db
 
       - name: Export Docker image
         run: |
-          docker save fullstack-pilot-mongo:latest | gzip > mongo-db-image.tar.gz
-          cp mongo-db/docker-compose.yml mongo-db-compose.yml
+          docker save fullstack-pilot-mongo:latest | gzip > databases/mongo-db-image.tar.gz
+          cp databases/mongo-db/docker-compose.yml databases/mongo-db-compose.yml
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v4
