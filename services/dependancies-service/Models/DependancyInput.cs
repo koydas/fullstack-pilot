@@ -1,9 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DependanciesService.Models;
 
-public record Project
+public class DependancyInput
 {
-    public Guid Id { get; init; } = Guid.NewGuid();
+    [Required]
+    [StringLength(200)]
     public string Name { get; init; } = string.Empty;
+
+    [StringLength(4000)]
     public string? Description { get; init; }
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }

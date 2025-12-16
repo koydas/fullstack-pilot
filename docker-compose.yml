@@ -1,5 +1,18 @@
 version: "3.9"
 services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: fullstack-pilot-mssql
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+
   mongo:
     build: ./databases/mongo-db
     container_name: fullstack-pilot-mongo
@@ -52,6 +65,9 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:6060
       ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DependanciesDb: Server=mssql,1433;Database=DependanciesDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True;
+    depends_on:
+      - mssql
     ports:
       - "6060:6060"
 
@@ -65,6 +81,8 @@ services:
 
 volumes:
   mongo-data:
+    driver: local
+  mssql-data:
     driver: local
   postgres-data:
     driver: local
