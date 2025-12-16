@@ -8,6 +8,6 @@ RUN dotnet publish -c Release -o /app/out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out ./
-ENV ASPNETCORE_URLS=http://+:6000
-EXPOSE 6000
+ENV ASPNETCORE_URLS=http://+:6060
+EXPOSE 6060
 ENTRYPOINT ["dotnet", "DependanciesService.dll"]

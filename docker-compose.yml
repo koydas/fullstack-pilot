@@ -31,13 +31,13 @@ services:
       - "5000:5000"
 
   dependancies-service:
-    build: ./dependancies-service
+    build: ./services/dependancies-service
     container_name: fullstack-pilot-dependancies-service
     environment:
-      ASPNETCORE_URLS: http://+:6000
+      ASPNETCORE_URLS: http://+:6060
       ASPNETCORE_ENVIRONMENT: Development
     ports:
-      - "6000:6000"
+      - "6060:6060"
 
   client:
     build: ./client
