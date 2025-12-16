@@ -34,7 +34,7 @@ Adopt a multi-service (microservices-style) architecture rather than a single mo
 
 **Decision**
 
-Use MongoDB as the primary operational database.
+Use MongoDB as the primary operational database. All runtime services persist their data to MongoDB rather than local in-memory stores.
 
 **Rationale**
 

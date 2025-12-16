@@ -26,10 +26,10 @@ flowchart TD
     Client -->|CRUD /api| PythonService
 
     AppsService -->|Project data| Mongo
-    DotNetService -->|In-memory storage| DotNetService
-    PythonService -->|In-memory CRUD| PythonService
+    DotNetService -->|Dependencies data| Mongo
+    PythonService -->|CRUD data| Mongo
 
     CI -. optional migrations .-> Mongo
 ```
 
-The diagram highlights how the React client communicates with independently deployable backend services, with the Node.js apps service persisting project data in MongoDB. CI/CD automates testing, packaging, and deployment of the client and services to a shared runtime environment.
+The diagram highlights how the React client communicates with independently deployable backend services. Each service now persists its domain data in MongoDB, providing consistent durability across the stack. CI/CD automates testing, packaging, and deployment of the client and services to a shared runtime environment.
