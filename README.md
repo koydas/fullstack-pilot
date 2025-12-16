@@ -3,8 +3,9 @@
 [![Build frontend image](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml)
 [![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
 [![Package MongoDB image](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml)
+[![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
 
-A showcase repository ready to demo end-to-end skills: React (JavaScript) on the UI, a Node/Express + MongoDB core API, plus bonus Flask and .NET microservices to illustrate a polyglot environment. Everything is scripted to launch in minutes, so you can focus on telling the product story.
+A showcase repository ready to demo end-to-end skills: React on the UI, a Node/Express + MongoDB core API, plus bonus Flask and .NET microservices to illustrate a polyglot environment. Everything is scripted to launch in minutes, so you can focus on telling the product story.
 
 ## Why this repo gets attention
 - **Candidate-to-production flow**: initialization scripts for dependencies, a single `docker compose up --build` to bring up the full stack, configured proxies, and smoke tests for every service.
