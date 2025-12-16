@@ -1,47 +1,46 @@
 # Dependancies Service
 
-Un service API en .NET 8 basé sur des contrôleurs qui expose des opérations CRUD pour des projets.
-Le stockage est en mémoire pour faciliter les tests locaux.
+A .NET 8 controller-based API that exposes CRUD operations for projects. Storage is in-memory to simplify local testing.
 
-## Prérequis
-- .NET 8 SDK installé localement.
+## Prerequisites
+- .NET 8 SDK installed locally.
 
-## Lancer le service
+## Run the service
 ```bash
 cd services/dependancies-service
 dotnet restore
 dotnet run
 ```
 
-L'API démarre sur `https://localhost:5001` ou `http://localhost:5000` par défaut. La page racine redirige vers Swagger afin d'explorer les routes.
+The API starts on `https://localhost:5001` or `http://localhost:5000` by default. The root page redirects to Swagger so you can explore the routes.
 
 ## Endpoints
-- `GET /api/dependancies` – liste tous les projets
-- `GET /api/dependancies/{id}` – récupère un projet par identifiant
-- `POST /api/dependancies` – crée un projet `{ "name": "Titre", "description": "Optionnelle" }`
-- `PUT /api/dependancies/{id}` – met à jour un projet existant
-- `DELETE /api/dependancies/{id}` – supprime un projet
+- `GET /api/dependancies` – list all projects
+- `GET /api/dependancies/{id}` – get a project by id
+- `POST /api/dependancies` – create a project `{ "name": "Title", "description": "Optional" }`
+- `PUT /api/dependancies/{id}` – update an existing project
+- `DELETE /api/dependancies/{id}` – delete a project
 
-## Exemples de requêtes
-Créer un projet :
+## Request examples
+Create a project:
 ```bash
 curl -X POST http://localhost:5000/api/dependancies \
   -H "Content-Type: application/json" \
-  -d '{"name":"Nouveau projet","description":"Démo .NET"}'
+  -d '{"name":"New project","description":".NET demo"}'
 ```
 
-Mettre à jour un projet :
+Update a project:
 ```bash
 curl -X PUT http://localhost:5000/api/dependancies/<ID> \
   -H "Content-Type: application/json" \
-  -d '{"name":"Nom mis à jour","description":"Nouvelle description"}'
+  -d '{"name":"Updated name","description":"New description"}'
 ```
 
-Supprimer un projet :
+Delete a project:
 ```bash
 curl -X DELETE http://localhost:5000/api/dependancies/<ID>
 ```
 
 ## Monitoring
 
-Une middleware simple journalise chaque requête HTTP avec la méthode, le chemin, le code de statut et le temps de réponse. Lors du lancement du service avec `dotnet run` ou via Docker Compose, ces événements apparaissent dans les logs de la console pour aider au suivi de la santé du service.
+A simple middleware logs each HTTP request with the method, path, status code, and response time. When the service runs via `dotnet run` or Docker Compose, these events appear in the console logs to help track service health.
