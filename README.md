@@ -8,7 +8,7 @@ Minimal React + Node.js + MongoDB starter focused on fast evaluation.
 
 ## What this project demonstrates
 - **Architecture:** Vite React client, Node/Express API, MongoDB persistence, plus optional Flask and .NET sample services to show polyglot patterns.
-- **DevOps:** npm scripts bootstrap and start all Node services; Docker Compose for Mongo; environment-based configuration via `.env` files per service.
+- **DevOps:** npm scripts bootstrap and start all Node services; Docker Compose for Mongo; environment-based configuration via `.env` files per service. Cross-service smoke checks live in [.devops/tests/smoke](.devops/tests/smoke/README.md).
 - **Quality:** TypeScript on the frontend, ESLint/Prettier defaults, and isolated services with consistent CRUD contracts.
 
 ## Architecture (Mermaid)
