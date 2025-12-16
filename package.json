@@ -19,6 +19,7 @@
     "start:services": "node .devops/start-all-services.js",
     "start:mongo-db": "cd databases/mongo-db && docker compose up -d --build",
     "start:postgre": "cd databases/postgre && (docker rm -f fullstack-pilot-postgres >/dev/null 2>&1 || true) && docker build -t fullstack-pilot-postgres:latest . && docker run -d --name fullstack-pilot-postgres -e POSTGRES_DB=fullstack-pilot -e POSTGRES_USER=fullstack -e POSTGRES_PASSWORD=fullstack -p 5432:5432 -v $(pwd)/data:/var/lib/postgresql/data fullstack-pilot-postgres:latest",
+    "start:mssql": "cd databases/mssql && (docker rm -f fullstack-pilot-mssql >/dev/null 2>&1 || true) && docker build -t fullstack-pilot-mssql:latest . && docker run -d --name fullstack-pilot-mssql -e ACCEPT_EULA=Y -e MSSQL_PID=Developer -e MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd} -p 1433:1433 -v $(pwd)/data:/var/opt/mssql fullstack-pilot-mssql:latest",
     "start:dependancies-service": "cd services/dependancies-service && dotnet run",
     "start:services-service": "cd services/services-service && python app.py"
   },
