@@ -16,6 +16,8 @@ flowchart TD
             PythonService["CRUD Service\n(Python Flask)"]
         end
         Mongo[(MongoDB)]
+        Postgres[(PostgreSQL)]
+        MSSQL[(SQL Server)]
     end
 
     Deploy --> Client
@@ -26,10 +28,12 @@ flowchart TD
     Client -->|CRUD /api| PythonService
 
     AppsService -->|Project data| Mongo
-    DotNetService -->|In-memory storage| DotNetService
-    PythonService -->|In-memory CRUD| PythonService
+    DotNetService -->|Dependencies data| MSSQL
+    PythonService -->|CRUD data| Postgres
 
     CI -. optional migrations .-> Mongo
+    CI -. optional migrations .-> MSSQL
+    CI -. optional migrations .-> Postgres
 ```
 
-The diagram highlights how the React client communicates with independently deployable backend services, with the Node.js apps service persisting project data in MongoDB. CI/CD automates testing, packaging, and deployment of the client and services to a shared runtime environment.
+The diagram highlights how the React client communicates with independently deployable backend services. Each service persists its domain data in a database engine aligned with its stack (MongoDB for the Node.js service, SQL Server for the .NET service, and PostgreSQL for the Python service), providing durable storage while keeping services decoupled. CI/CD automates testing, packaging, and deployment of the client and services to a shared runtime environment.
