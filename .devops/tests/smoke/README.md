@@ -19,6 +19,9 @@ Environment variables can override the target URLs:
 - `SMOKE_MONGO_URL` (default: `mongodb://localhost:27017/fullstack-pilot`)
 - `SMOKE_MONGO_CONTAINER` (default: `fullstack-pilot-mongo`) – container name to reuse when auto-starting
 - `SMOKE_MONGO_SKIP_AUTOSTART` (set to `true` to disable) – skip attempts to start the local helper container
+- `SMOKE_MSSQL_URL` (default: `mssql://sa:YourStrong!Passw0rd@localhost:1433`)
+- `SMOKE_MSSQL_CONTAINER` (default: `fullstack-pilot-mssql`) – container name to reuse when auto-starting
+- `SMOKE_MSSQL_SKIP_AUTOSTART` (set to `true` to disable) – skip attempts to start the local helper container
 
 Optional tuning variables:
 

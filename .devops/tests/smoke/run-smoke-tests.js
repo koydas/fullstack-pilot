@@ -2,10 +2,16 @@
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import net from 'node:net';
+import { createMssqlUtils } from './mssql/index.js';
 
 const retries = Number(process.env.SMOKE_RETRIES || 10);
 const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 2000);
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
+const { runMssqlCheck, ensureMssqlHelper } = createMssqlUtils({
+  timeoutMs,
+  isDockerAvailable,
+  isContainerPresent,
+});
 
 const services = [
   {
@@ -51,6 +57,11 @@ const services = [
       runPostgresCheck(
         process.env.SMOKE_POSTGRES_URL || 'postgres://fullstack:fullstack@localhost:5432/fullstack-pilot',
       ),
+  },
+  {
+    name: 'mssql',
+    setup: () => ensureMssqlHelper(process.env.SMOKE_MSSQL_URL),
+    run: () => runMssqlCheck(process.env.SMOKE_MSSQL_URL || 'mssql://sa:YourStrong!Passw0rd@localhost:1433'),
   },
 ];
 
