@@ -3,9 +3,6 @@ name: Build backend images
 on:
   push:
     branches: ["main"]
-    paths:
-      - "services/**"
-      - ".github/workflows/build-backend.yml"
   workflow_dispatch:
 
 env:
@@ -25,7 +22,7 @@ jobs:
       - name: Detect services to build
         id: set-matrix
         run: |
-          node ./.devops/discover-services.js "$GITHUB_OUTPUT" "${{ github.event.before }}" "${{ github.sha }}"
+          node ./.devops/discover-services.js "$GITHUB_OUTPUT"
 
   build:
     needs: discover
@@ -55,9 +52,9 @@ jobs:
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./services/${{ matrix.service }}
-          file: ./services/${{ matrix.service }}/Dockerfile
+          context: ./${{ matrix.service.path }}
+          file: ./${{ matrix.service.dockerfile }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service.name }}:${{ github.sha }}

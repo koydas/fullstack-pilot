@@ -8,7 +8,7 @@ Minimal React + Node.js + MongoDB starter focused on fast evaluation.
 
 ## What this project demonstrates
 - **Architecture:** Vite React client, Node/Express API, MongoDB persistence, plus optional Flask and .NET sample services to show polyglot patterns.
-- **DevOps:** npm scripts bootstrap and start all Node services; Docker Compose for Mongo; environment-based configuration via `.env` files per service.
+- **DevOps:** npm scripts bootstrap and start all Node services; Docker Compose for Mongo; environment-based configuration via `.env` files per service. Cross-service smoke checks live in [.devops/tests/smoke](.devops/tests/smoke/README.md).
 - **Quality:** TypeScript on the frontend, ESLint/Prettier defaults, and isolated services with consistent CRUD contracts.
 
 ## Architecture (Mermaid)
@@ -62,7 +62,7 @@ Services are available at:
 - Frontend: http://localhost:5173/
 - Apps API: http://localhost:4000/api
 - Flask services API: http://localhost:5000/api
-- .NET dependencies API: http://localhost:6000/swagger
+- .NET dependencies API: http://localhost:6060/swagger
 - MongoDB: mongodb://localhost:27017/fullstack-pilot
 
 To rebuild after code changes, run `docker compose up --build` again. Use `docker compose down` to stop and remove the containers.
@@ -72,6 +72,7 @@ To rebuild after code changes, run `docker compose up --build` again. Use `docke
 - `apps-service/` – Node/Express service uses MongoDB.
 - `services-service/` – Flask CRUD sample.
 - `services/dependancies-service/` – .NET 8 CRUD sample.
+- `services/services-service/` – Flask CRUD sample.
 - `mongo-db/` – Docker Compose for local MongoDB.
 
 ## API overview (apps-service)

@@ -28,6 +28,7 @@ The service will listen on `http://localhost:5000` by default. To use a differen
 ### Project layout
 - `app.py` – WSGI entrypoint that wires a Flask app using the factory in `service_api`.
 - `service_api/factory.py` – creates the Flask app instance and registers blueprints.
+- `service_api/monitoring.py` – request timing and logging middleware registered in the app factory.
 - `service_api/routes.py` – request handlers grouped under the `/api/services` blueprint.
 - `service_api/validation.py` – request payload parsing and validation helpers.
 
