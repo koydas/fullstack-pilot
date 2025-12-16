@@ -13,7 +13,7 @@ dotnet restore
 dotnet run
 ```
 
-L'API démarre sur `https://localhost:5001` ou `http://localhost:5000` par défaut. La page racine redirige vers Swagger afin d'explorer les routes.
+L'API démarre sur `http://localhost:6060` (Swagger est servi à la racine pour explorer les routes).
 
 ## Endpoints
 - `GET /api/dependancies` – liste tous les projets
@@ -25,19 +25,19 @@ L'API démarre sur `https://localhost:5001` ou `http://localhost:5000` par défa
 ## Exemples de requêtes
 Créer un projet :
 ```bash
-curl -X POST http://localhost:5000/api/dependancies \
+curl -X POST http://localhost:6060/api/dependancies \
   -H "Content-Type: application/json" \
   -d '{"name":"Nouveau projet","description":"Démo .NET"}'
 ```
 
 Mettre à jour un projet :
 ```bash
-curl -X PUT http://localhost:5000/api/dependancies/<ID> \
+curl -X PUT http://localhost:6060/api/dependancies/<ID> \
   -H "Content-Type: application/json" \
   -d '{"name":"Nom mis à jour","description":"Nouvelle description"}'
 ```
 
 Supprimer un projet :
 ```bash
-curl -X DELETE http://localhost:5000/api/dependancies/<ID>
+curl -X DELETE http://localhost:6060/api/dependancies/<ID>
 ```

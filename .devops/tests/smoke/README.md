@@ -12,7 +12,7 @@ Environment variables can override the target URLs:
 
 - `SMOKE_APPS_SERVICE_URL` (default: `http://localhost:4000/api/apps`)
 - `SMOKE_SERVICES_SERVICE_URL` (default: `http://localhost:5000/api/services`)
-- `SMOKE_DEPENDANCIES_SERVICE_URL` (default: `http://localhost:6000/api/dependancies`)
+- `SMOKE_DEPENDANCIES_SERVICE_URL` (default: `http://localhost:6060/api/dependancies`)
 
 Optional tuning variables:
 

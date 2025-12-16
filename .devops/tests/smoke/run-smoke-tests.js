@@ -24,7 +24,7 @@ const services = [
   },
   {
     name: 'dependancies-service',
-    url: process.env.SMOKE_DEPENDANCIES_SERVICE_URL || 'http://localhost:6000/api/dependancies',
+    url: process.env.SMOKE_DEPENDANCIES_SERVICE_URL || 'http://localhost:6060/api/dependancies',
     validate: async (response) => {
       await expectJsonArray(response, {
         context: 'dependancies catalogue',

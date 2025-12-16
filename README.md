@@ -62,7 +62,7 @@ Services are available at:
 - Frontend: http://localhost:5173/
 - Apps API: http://localhost:4000/api
 - Flask services API: http://localhost:5000/api
-- .NET dependencies API: http://localhost:6000/swagger
+- .NET dependencies API: http://localhost:6060/swagger
 - MongoDB: mongodb://localhost:27017/fullstack-pilot
 
 To rebuild after code changes, run `docker compose up --build` again. Use `docker compose down` to stop and remove the containers.
