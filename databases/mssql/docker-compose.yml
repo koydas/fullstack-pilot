@@ -1,0 +1,13 @@
+services:
+  mssql:
+    image: ghcr.io/${IMAGE_NAMESPACE:-<OWNER>}/fullstack-pilot-mssql:latest
+    container_name: fullstack-pilot-mssql
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./data:/var/opt/mssql
