@@ -4,12 +4,12 @@
 [![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
 [![Package MongoDB image](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml)
 
-A showcase repository ready to demo end-to-end skills: React (TypeScript) on the UI, a Node/Express + MongoDB core API, plus bonus Flask and .NET microservices to illustrate a polyglot environment. Everything is scripted to launch in minutes, so you can focus on telling the product story.
+A showcase repository ready to demo end-to-end skills: React (JavaScript) on the UI, a Node/Express + MongoDB core API, plus bonus Flask and .NET microservices to illustrate a polyglot environment. Everything is scripted to launch in minutes, so you can focus on telling the product story.
 
 ## Why this repo gets attention
 - **Candidate-to-production flow**: initialization scripts for dependencies, a single `docker compose up --build` to bring up the full stack, configured proxies, and smoke tests for every service.
 - **Credible architecture**: Vite frontend, Node/Mongo API, Python/.NET services behind dedicated routes, and a mermaid data-flow overview.
-- **Review-ready defaults**: ESLint/Prettier, TypeScript on the client, consistent CRUD contracts, and per-service `.env` configuration.
+- **Review-ready defaults**: ESLint/Prettier, modern JavaScript on the client, consistent CRUD contracts, and per-service `.env` configuration.
 - **Fast demo path**: project CRUD on MongoDB reachable via `/api/projects` and the UI.
 
 ## Architecture at a glance
@@ -60,7 +60,7 @@ Exposes: frontend (5173), Node API (4000), Flask API (5000), .NET API (6060), Mo
 Rebuild after changes with `docker compose up --build`. Stop with `docker compose down`.
 
 ## Directory tour
-- `client/` – React + TypeScript UI built with Vite. See the [client README](client/README.md).
+- `client/` – React + JavaScript UI built with Vite. See the [client README](client/README.md).
 - `apps-service/` – Node/Express API connected to MongoDB.
 - `services/services-service/` – Flask CRUD service. Overview in the [services-service README](services/services-service/README.md).
 - `services/dependancies-service/` – .NET 8 CRUD service. Details in the [dependancies-service README](services/dependancies-service/README.md).

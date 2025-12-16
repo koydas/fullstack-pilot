@@ -1,6 +1,6 @@
 # Client (React + Vite)
 
-A React + TypeScript SPA built with Vite. It proxies `/api` requests to the Node apps-service during local dev and ships a production-ready build via `npm run build`.
+A React + JavaScript SPA built with Vite. It proxies `/api` requests to the Node apps-service during local dev and ships a production-ready build via `npm run build`.
 
 ## Quick start
 ```bash
@@ -17,5 +17,5 @@ npm run dev -- --host
 - `npm run preview` – preview the production build locally
 
 ## Notes
-- Environment variables come from `vite.config.ts` and `.env` files (see Vite docs for prefixes). When running via Docker Compose the proxy is preconfigured.
+- Environment variables come from `vite.config.js` and `.env` files (see Vite docs for prefixes). When running via Docker Compose the proxy is preconfigured.
 - The UI consumes the Node API at `/api/projects` and can be extended to call the optional Flask and .NET services.
