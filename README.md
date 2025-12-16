@@ -43,7 +43,7 @@ flowchart LR
    ```
 3. **Start the core stack** (Node API + Mongo + React)
    ```bash
-   cd mongo-db && docker compose up -d && cd ..
+   cd databases/mongo-db && docker compose up -d && cd ../..
    npm run start:services
    cd client && npm run dev -- --host
    ```
@@ -66,7 +66,7 @@ Rebuild after changes with `docker compose up --build`. Stop with `docker compos
 - `services/services-service/` – Flask CRUD service. Overview in the [services-service README](services/services-service/README.md).
 - `services/dependancies-service/` – .NET 8 CRUD service. Details in the [dependancies-service README](services/dependancies-service/README.md).
 - `services/` – cross-service scripts and notes (see [services README](services/README.md)).
-- `mongo-db/` – docker-compose for local Mongo (see [mongo-db README](mongo-db/README.md)).
+- `databases/mongo-db/` – docker-compose for local Mongo (see [mongo-db README](databases/mongo-db/README.md)).
 
 ## Primary API (apps-service)
 - `GET /api/apps` – list projects

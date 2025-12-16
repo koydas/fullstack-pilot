@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   mongo:
-    build: ./mongo-db
+    build: ./databases/mongo-db
     container_name: fullstack-pilot-mongo
     restart: unless-stopped
     ports:
