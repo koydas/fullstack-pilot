@@ -1,25 +1,19 @@
 from __future__ import annotations
 
-from typing import Dict
-
 from flask import Blueprint, abort, current_app, jsonify, request, url_for
+
+from .db import ServicesRepository
 from .validation import parse_payload, validate_new_service, validate_updates
 
 services_bp = Blueprint("services", __name__, url_prefix="/api/services")
 
 
-def _services() -> Dict[int, Dict[str, str]]:
-    return current_app.config["SERVICES"]
+def _repository() -> ServicesRepository:
+    return current_app.config["REPOSITORY"]
 
 
-def _next_id() -> int:
-    service_id = current_app.config["NEXT_SERVICE_ID"]
-    current_app.config["NEXT_SERVICE_ID"] = service_id + 1
-    return service_id
-
-
-def _ensure_service_or_404(service_id: int) -> Dict[str, str]:
-    service = _services().get(service_id)
+def _ensure_service_or_404(service_id: int):
+    service = _repository().get_service(service_id)
     if service is None:
         abort(404, description="Service not found")
     return service
@@ -27,7 +21,8 @@ def _ensure_service_or_404(service_id: int) -> Dict[str, str]:
 
 @services_bp.get("")
 def list_services():
-    return jsonify(list(_services().values()))
+    services = _repository().list_services()
+    return jsonify(services)
 
 
 @services_bp.post("")
@@ -39,9 +34,7 @@ def create_service():
     except ValueError as exc:
         abort(400, description=str(exc))
 
-    service_id = _next_id()
-    service = {"id": service_id, "name": name, "description": description}
-    _services()[service_id] = service
+    service = _repository().create_service(name, description)
 
     response = jsonify(service)
     response.status_code = 201
@@ -64,14 +57,16 @@ def update_service(service_id: int):
     except ValueError as exc:
         abort(400, description=str(exc))
 
-    _ensure_service_or_404(service_id)
-    service = _services()[service_id]
-    service.update(updates)
+    service = _repository().update_service(service_id, updates)
+    if service is None:
+        abort(404, description="Service not found")
+
     return jsonify(service)
 
 
 @services_bp.delete("/<int:service_id>")
 def delete_service(service_id: int):
-    _ensure_service_or_404(service_id)
-    del _services()[service_id]
+    service = _repository().delete_service(service_id)
+    if not service:
+        abort(404, description="Service not found")
     return "", 204

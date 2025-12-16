@@ -1,11 +1,11 @@
 # Flask CRUD service
 
-A lightweight Flask API that exposes CRUD operations for simple services. Data is stored in memory within the Flask app for local
-testing and resets each time the service restarts.
+A lightweight Flask API that exposes CRUD operations for simple services. Data is stored in PostgreSQL so it persists across restarts when a database volume is mounted.
 
 ## Requirements
 - Python 3.10+
 - `pip` for installing dependencies
+- A running PostgreSQL instance (e.g., via `npm run start:postgre`).
 
 ## Setup
 Install dependencies in a virtual environment (recommended):
@@ -23,7 +23,7 @@ Start the API locally:
 python app.py
 ```
 
-The service will listen on `http://localhost:5000` by default. To use a different port, set the `PORT` environment variable before starting the app.
+The service will listen on `http://localhost:5000` by default. To use a different port, set the `PORT` environment variable before starting the app. Configure the database connection string with `POSTGRES_DSN` (defaults to `postgresql://fullstack:fullstack@localhost:5432/fullstack-pilot`).
 
 ### Project layout
 - `app.py` – WSGI entrypoint that wires a Flask app using the factory in `service_api`.
@@ -31,6 +31,7 @@ The service will listen on `http://localhost:5000` by default. To use a differen
 - `service_api/monitoring.py` – request timing and logging middleware registered in the app factory.
 - `service_api/routes.py` – request handlers grouped under the `/api/services` blueprint.
 - `service_api/validation.py` – request payload parsing and validation helpers.
+- `service_api/db.py` – PostgreSQL-backed persistence for services.
 
 ## API
 All endpoints are prefixed with `/api`.
