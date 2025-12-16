@@ -22,12 +22,16 @@ A showcase repository ready to demo end-to-end skills: React on the UI, a Node/E
 flowchart LR
   UI[React + Vite client]
   API[Node/Express apps-service]
-  DB[(MongoDB)]
+  DB1[(MongoDB)]
+  DB2[(PostGre)]
+  DB3[(MSSQL)]
   PY[Flask services-service]
   DOTNET[.NET dependancies-service]
 
   UI -->|/api apps| API
-  API --> DB
+  API --> DB1
+  PY --> DB2
+  DOTNET --> DB3
   UI -->|/api services| PY
   UI -->|/api/dependancies| DOTNET
 ```
