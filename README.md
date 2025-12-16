@@ -11,7 +11,7 @@ A showcase repository ready to demo end-to-end skills: React on the UI, a Node/E
 - **Candidate-to-production flow**: initialization scripts for dependencies, a single `docker compose up --build` to bring up the full stack, configured proxies, and smoke tests for every service.
 - **Credible architecture**: Vite frontend, Node/Mongo API, Python/.NET services behind dedicated routes, and a mermaid data-flow overview.
 - **Review-ready defaults**: ESLint/Prettier, modern JavaScript on the client, consistent CRUD contracts, and per-service `.env` configuration.
-- **Fast demo path**: project CRUD on MongoDB reachable via `/api/projects` and the UI.
+- **Fast demo path**: project CRUD on MongoDB reachable via `/api/apps` and the UI.
 
 ## Architecture at a glance
 ```mermaid
@@ -22,7 +22,7 @@ flowchart LR
   PY[Flask services-service]
   DOTNET[.NET dependancies-service]
 
-  UI -->|/api projects| API
+  UI -->|/api apps| API
   API --> DB
   UI -->|/api services| PY
   UI -->|/api/dependancies| DOTNET
@@ -69,9 +69,9 @@ Rebuild after changes with `docker compose up --build`. Stop with `docker compos
 - `mongo-db/` – docker-compose for local Mongo (see [mongo-db README](mongo-db/README.md)).
 
 ## Primary API (apps-service)
-- `GET /api/projects` – list projects
-- `POST /api/projects` – create a project `{ "name": "My project" }`
-- `DELETE /api/projects/:id` – delete by id
+- `GET /api/apps` – list projects
+- `POST /api/apps` – create a project `{ "name": "My project" }`
+- `DELETE /api/apps/:id` – delete by id
 
 ## Ready-made smoke tests
 Each service includes a self-contained POST → GET → DELETE script (see [.devops/tests/smoke](.devops/tests/smoke/README.md)). Run them once the service is up:
