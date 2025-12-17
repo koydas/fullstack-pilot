@@ -1,101 +1,48 @@
-# FullStack Pilot – a full-stack starter kit
+# FullStack Pilot
 
-[![Build frontend image](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml)
-[![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
+## What this repo demonstrates (Hiring manager view)
+- Polyglot stack standing up quickly: React/Vite UI, Node/Express API on MongoDB, plus optional Flask (Postgres) and .NET (SQL Server) services.
+- Practical operational story: Docker Compose definitions, per-service Dockerfiles, and smoke-test scripts for each backend.
+- Review-ready defaults: lintable frontend, environment-based config, and repeatable init scripts for dependencies.
 
-[![Package MongoDB image](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml)
-[![Package PostgreSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml)
-[![Package MSSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml)
+## Goals / Non-goals
+- **Goals:** show end-to-end CRUD across a polyglot data layer (MongoDB, PostgreSQL, SQL Server), demonstrate multi-service wiring, and keep setup friction low.
+- **Non-goals:** production hardening (auth, observability), extensive test coverage, or cloud-specific deployment templates.
 
-[![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
-
-A showcase repository ready to demo end-to-end skills: React on the UI, a Node/Express + MongoDB core API, plus bonus Flask and .NET microservices to illustrate a polyglot environment. Everything is scripted to launch in minutes, so you can focus on telling the product story.
-
-## Why this repo gets attention
-- **Candidate-to-production flow**: initialization scripts for dependencies, a single `docker compose up --build` to bring up the full stack, configured proxies, and smoke tests for every service.
-- **Credible architecture**: Vite frontend, Node/Mongo API, Python/.NET services behind dedicated routes, and a mermaid data-flow overview.
-- **Review-ready defaults**: ESLint/Prettier, modern JavaScript on the client, consistent CRUD contracts, and per-service `.env` configuration.
-- **Fast demo path**: project CRUD on MongoDB reachable via `/api/apps` and the UI.
-
-## Architecture at a glance
-```mermaid
-flowchart LR
-  UI[React + Vite client]
-  API[Node/Express apps-service]
-  DB1[(MongoDB)]
-  DB2[(PostGre)]
-  DB3[(MSSQL)]
-  PY[Flask services-service]
-  DOTNET[.NET dependancies-service]
-
-  UI -->|/api apps| API
-  API --> DB1
-  PY --> DB2
-  DOTNET --> DB3
-  UI -->|/api services| PY
-  UI -->|/api/dependancies| DOTNET
-```
+## Prerequisites
+- Node.js (18+ recommended)
+- Docker and Docker Compose
 
 ## Quick start
-1. **Install Node dependencies**
-   ```bash
-   npm run init:services
-   npm run init:client
-   ```
-2. **Create the environment file**
-   ```bash
-   cat > services/.env <<'EOF'
-   MONGODB_URI=mongodb://localhost:27017/fullstack-pilot
-   PORT=4000
-   EOF
-   ```
-3. **Start the core stack** (Node API + Mongo + React)
-   ```bash
-   npm run start:mongo-db
-   npm run start:services
-   cd client && npm run dev -- --host
-   ```
-   - Frontend: http://localhost:5173 (proxy `/api` → backend)
-   - Node API: http://localhost:4000/api
-4. **Optional services**
-   - Flask: `npm run start:services-service` (`http://localhost:5000/api`)
-   - .NET: `npm run start:dependancies-service` (routes `/api/dependancies`, Swagger: `http://localhost:6060/swagger`)
-   - MongoDB helper: `npm run start:mongo-db` (connection string `mongodb://localhost:27017/fullstack-pilot`)
-   - PostgreSQL helper: `npm run start:postgre` (connection string `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`)
+### Path 1: Docker Compose (everything in containers)
+1. `docker compose up --build`
+2. Browse the services:
+   - Client UI: http://localhost:5173
+   - Node/Express API: http://localhost:4000/api
+   - Flask API: http://localhost:5000/api
+   - .NET API (+ Swagger): http://localhost:6060 (Swagger at `/swagger`)
+   - Datastores: MongoDB 27017, PostgreSQL 5432, SQL Server 1433
+3. Stop with `docker compose down`.
 
-### One-command launch
-```bash
-docker compose up --build
-```
-Exposes: frontend (5173), Node API (4000), Flask API (5000), .NET API (6060), MongoDB (27017).
-Rebuild after changes with `docker compose up --build`. Stop with `docker compose down`.
+### Path 2: Local (without docker-compose)
+1. Install dependencies: `npm run init` (installs all services and the client).
+2. Ensure MongoDB is reachable at `mongodb://localhost:27017/fullstack-pilot` (start your own instance or run the helper `npm run start:mongo-db`).
+3. In one terminal: `npm run start:apps-service` (starts the Node API on port 4000).
+4. In another terminal: `npm run start:client` (starts Vite on http://localhost:5173 with proxying to the API).
+5. Optional extras (run with their own prerequisites):
+   - Flask service: `npm run start:services-service` (port 5000, needs PostgreSQL at `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`).
+   - .NET service: `npm run start:dependancies-service` (port 6060, needs SQL Server credentials from `MSSQL_SA_PASSWORD`).
 
-## Directory tour
-- `client/` – React + JavaScript UI built with Vite. See the [client README](client/README.md).
-- `apps-service/` – Node/Express API connected to MongoDB.
-- `services/services-service/` – Flask CRUD service. Overview in the [services-service README](services/services-service/README.md).
-- `services/dependancies-service/` – .NET 8 CRUD service. Details in the [dependancies-service README](services/dependancies-service/README.md).
-- `services/` – cross-service scripts and notes (see [services README](services/README.md)).
-- `databases/mongo-db/` – docker-compose for local Mongo (see [mongo-db README](databases/mongo-db/README.md)).
-- `databases/postgre/` – Dockerfile for a local PostgreSQL helper (see [postgre README](databases/postgre/README.md)).
+## Architecture overview
+- **client (5173)** → React/Vite UI served via Nginx in Compose; proxies `/api` to the Node API.
+- **apps-service (4000)** → Node/Express CRUD API backed by MongoDB.
+- **services-service (5000)** → Flask CRUD service using PostgreSQL.
+- **dependancies-service (6060)** → .NET 8 API using SQL Server (Swagger at `/swagger`).
+- **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
+- **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Primary API (apps-service)
-- `GET /api/apps` – list projects
-- `POST /api/apps` – create a project `{ "name": "My project" }`
-- `DELETE /api/apps/:id` – delete by id
-
-## Ready-made smoke tests
-Each service includes a self-contained POST → GET → DELETE script (see [.devops/tests/smoke](.devops/tests/smoke/README.md)). Run them once the service is up:
-- Node/Mongo: `./scripts/api-smoke.sh` (env override: `APPS_API_URL` or `API_URL`)
-- Flask: `./scripts/services-smoke.sh` (override: `SERVICES_API_URL`)
-- .NET: `./scripts/dependancies-smoke.sh` (override: `DEPENDANCIES_API_URL`)
-- MongoDB helper reachability: included in `npm run test:smoke` (override with `SMOKE_MONGO_URL`)
-- PostgreSQL helper reachability: included in `npm run test:smoke` (override with `SMOKE_POSTGRES_URL`)
-
-## Deploying to production
-- Point `MONGODB_URI` to your managed cluster.
-- Build the frontend: `cd client && npm run build`, then serve `dist/` behind your reverse proxy pointed at the API.
-- Recommended next steps: CI (lint, type-check, tests), seeds + UI/API E2E, vaulted secrets, healthchecks, JWT auth, centralized logging/metrics.
-
-## Roadmap
-The backlog and evaluation checklist live in [GitHub Issues](https://github.com/AndrewHulme/fullstack-pilot/issues).
+## Project conventions
+- **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
+- **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependanciesDb`).
+- **Adding a service:** create `services/<new-service>`, include a runnable dev script (`npm run dev` or `start`), add a Dockerfile, expose a unique port, and wire it into `docker-compose.yml` (and `.devops` manifests if you want GitOps support).
+- **Scripts to know:** `npm run init` installs all service/client dependencies; `npm run start:services` starts every service that has a `dev`/`start` script; smoke tests live under `.devops/tests/smoke/`.
