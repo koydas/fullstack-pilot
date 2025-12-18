@@ -51,7 +51,7 @@ describe('App', () => {
     await screen.findByText('Existing app');
     await user.click(screen.getByRole('button', { name: /remove app/i }));
 
-    expect(screen.getByRole('dialog', { name: /delete existing app\?/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /delete "existing app"\?/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /delete app/i }));
 
@@ -70,7 +70,7 @@ describe('App', () => {
     await screen.findByText('Existing app');
     await user.click(screen.getByRole('button', { name: /remove app/i }));
 
-    expect(screen.getByRole('dialog', { name: /delete existing app\?/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /delete "existing app"\?/i })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /cancel/i }));
 
