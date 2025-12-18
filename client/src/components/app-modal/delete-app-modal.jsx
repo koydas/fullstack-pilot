@@ -18,7 +18,7 @@ export default function DeleteAppModal({ app, onCancel, onConfirm, loading }) {
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={`Delete ${app.name}?`}
+        aria-label={`Delete "${app.name}"?`}
       >
         <ModalHeader>
           <ModalTitle>Delete "{app.name}"?</ModalTitle>

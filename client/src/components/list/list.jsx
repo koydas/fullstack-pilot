@@ -19,7 +19,7 @@ export default function List({ apps, onRemove, showEmpty = true, onSelect }) {
       {apps.length === 0 && showEmpty && <p>No apps yet.</p>}
 
       {apps.map((app) => (
-        <AppItem key={app._id}>
+        <AppItem key={app._id} aria-label={app.name}>
           <AppMeta>
             <AppName>{app.name}</AppName>
             <AppDate>Created {formatDate(app.createdAt)}</AppDate>
