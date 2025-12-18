@@ -66,9 +66,14 @@ export default function AppModal({ app, onClose }) {
 
   return (
     <ModalBackdrop onClick={onClose} role="presentation">
-      <ModalContent onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true">
+      <ModalContent
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="app-dialog-title"
+      >
         <ModalHeader>
-          <ModalTitle>{app.name}</ModalTitle>
+          <ModalTitle id="app-dialog-title">{app.name}</ModalTitle>
           <CloseButton type="button" aria-label="Close" onClick={onClose}>
             ×
           </CloseButton>
