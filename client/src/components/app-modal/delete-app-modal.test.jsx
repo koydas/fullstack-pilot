@@ -14,7 +14,7 @@ describe('DeleteAppModal', () => {
       <DeleteAppModal app={app} onCancel={() => {}} onConfirm={() => {}} loading={false} />
     );
 
-    expect(screen.getByRole('dialog', { name: /delete example app\?/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /delete "example app"\?/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /delete "example app"\?/i })).toBeInTheDocument();
     expect(screen.getByText(/this action will permanently delete/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /delete app/i })).toBeEnabled();
