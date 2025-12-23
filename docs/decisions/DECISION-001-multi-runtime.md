@@ -1,4 +1,4 @@
-# ADR-001: Multi-runtime Services
+# Decision 001: Multi-runtime Services
 
 ## Context
 - The platform combines a React client, a Node.js apps service, a .NET dependencies service, and a Python CRUD service.
