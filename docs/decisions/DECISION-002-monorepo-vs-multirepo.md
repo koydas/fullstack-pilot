@@ -1,4 +1,4 @@
-# ADR-002: Monorepo Structure
+# Decision 002: Monorepo Structure
 
 ## Context
 - The repository contains the client plus multiple backend services and database build contexts under one root.
