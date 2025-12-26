@@ -1,25 +1,16 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import { AppServiceError, createApp, deleteApp, listApps } from './appsService.js';
 
 const router = express.Router();
-
-const appSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  { timestamps: true }
-);
-
-const App = mongoose.model('App', appSchema);
 
 const asyncHandler = (handler) => async (req, res, next) => {
   try {
     await handler(req, res, next);
   } catch (error) {
+    if (error instanceof AppServiceError && error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+
     next(error);
   }
 };
@@ -27,7 +18,7 @@ const asyncHandler = (handler) => async (req, res, next) => {
 router.get(
   '/',
   asyncHandler(async (_req, res) => {
-    const apps = await App.find().sort({ createdAt: -1 });
+    const apps = await listApps();
     res.json(apps);
   })
 );
@@ -35,12 +26,7 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'App name is required.' });
-    }
-
-    const appRecord = await App.create({ name: name.trim() });
+    const appRecord = await createApp(req.body);
     res.status(201).json(appRecord);
   })
 );
@@ -49,10 +35,7 @@ router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const appRecord = await App.findByIdAndDelete(id);
-    if (!appRecord) {
-      return res.status(404).json({ error: 'App not found.' });
-    }
+    await deleteApp(id);
     res.status(204).send();
   })
 );
