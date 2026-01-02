@@ -38,6 +38,11 @@ import {
   deleteService,
   fetchServices,
 } from '../../services/services/services-service.jsx';
+import {
+  createDependancy,
+  deleteDependancy,
+  fetchDependancies,
+} from '../../services/dependancies/dependancies-service.jsx';
 
 const TABS = [
   { id: 'details', label: 'App details' },
@@ -61,6 +66,14 @@ function getErrorMessage(error, fallbackMessage) {
 
 export default function AppModal({ app, onClose }) {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [dependancies, setDependancies] = useState([]);
+  const [isLoadingDependancies, setIsLoadingDependancies] = useState(false);
+  const [dependanciesError, setDependanciesError] = useState('');
+  const [dependancyName, setDependancyName] = useState('');
+  const [dependancyDescription, setDependancyDescription] = useState('');
+  const [isCreatingDependancy, setIsCreatingDependancy] = useState(false);
+  const [deletingDependancyId, setDeletingDependancyId] = useState(null);
+  const [hasLoadedDependancies, setHasLoadedDependancies] = useState(false);
   const [services, setServices] = useState([]);
   const [isLoadingServices, setIsLoadingServices] = useState(false);
   const [servicesError, setServicesError] = useState('');
@@ -71,6 +84,11 @@ export default function AppModal({ app, onClose }) {
   const [hasLoadedServices, setHasLoadedServices] = useState(false);
 
   useEffect(() => {
+    setDependancies([]);
+    setHasLoadedDependancies(false);
+    setDependanciesError('');
+    setDependancyName('');
+    setDependancyDescription('');
     setServices([]);
     setHasLoadedServices(false);
     setServicesError('');
@@ -79,10 +97,74 @@ export default function AppModal({ app, onClose }) {
   }, [app._id]);
 
   useEffect(() => {
+    if (activeTab === 'dependencies' && !hasLoadedDependancies) {
+      loadDependancies();
+    }
+  }, [activeTab, hasLoadedDependancies, app._id]);
+
+  useEffect(() => {
     if (activeTab === 'services' && !hasLoadedServices) {
       loadServices();
     }
   }, [activeTab, hasLoadedServices, app._id]);
+
+  function normalizeDependancy(item) {
+    return {
+      id: item.id ?? item.Id,
+      name: item.name ?? item.Name,
+      description: item.description ?? item.Description,
+      createdAt: item.createdAt ?? item.CreatedAt,
+    };
+  }
+
+  async function loadDependancies() {
+    try {
+      setIsLoadingDependancies(true);
+      setDependanciesError('');
+      const data = await fetchDependancies();
+      setDependancies(data.map(normalizeDependancy));
+    } catch (error) {
+      setDependanciesError(getErrorMessage(error, 'Could not load dependencies'));
+    } finally {
+      setIsLoadingDependancies(false);
+      setHasLoadedDependancies(true);
+    }
+  }
+
+  async function handleCreateDependancy(event) {
+    event.preventDefault();
+    if (!dependancyName.trim()) return;
+
+    try {
+      setIsCreatingDependancy(true);
+      const payload = {
+        name: dependancyName.trim(),
+        description: dependancyDescription.trim(),
+      };
+      const newDependancy = await createDependancy(payload);
+      setDependancies((previous) => [normalizeDependancy(newDependancy), ...previous]);
+      setDependancyName('');
+      setDependancyDescription('');
+      setDependanciesError('');
+    } catch (error) {
+      setDependanciesError(getErrorMessage(error, 'Could not create dependency'));
+    } finally {
+      setIsCreatingDependancy(false);
+    }
+  }
+
+  async function handleDeleteDependancy(id) {
+    try {
+      setDeletingDependancyId(id);
+      await deleteDependancy(id);
+      setDependancies((previous) => previous.filter((dependancy) => dependancy.id !== id));
+      setDependanciesError('');
+    } catch (error) {
+      setDependanciesError(getErrorMessage(error, 'Could not remove dependency'));
+    } finally {
+      setDeletingDependancyId(null);
+    }
+  }
 
   async function loadServices() {
     try {
@@ -131,6 +213,98 @@ export default function AppModal({ app, onClose }) {
     } finally {
       setDeletingServiceId(null);
     }
+  }
+
+  function renderDependenciesPanel() {
+    return (
+      <ServicesLayout>
+        <ServiceSectionTitle>Dependencies</ServiceSectionTitle>
+        <ServiceIntro>
+          Track the dependencies that support <strong>{app.name}</strong>. Add new items or clean up
+          ones you no longer need.
+        </ServiceIntro>
+
+        <ServiceToolbar>
+          <ServiceToolbarText>
+            {isLoadingDependancies
+              ? 'Loading dependencies...'
+              : `You have ${dependancies.length} dependenc${dependancies.length === 1 ? 'y' : 'ies'} configured.`}
+          </ServiceToolbarText>
+          <ServiceToolbarActions>
+            <SecondaryButton
+              type="button"
+              onClick={loadDependancies}
+              disabled={isLoadingDependancies}
+            >
+              Refresh list
+            </SecondaryButton>
+          </ServiceToolbarActions>
+        </ServiceToolbar>
+
+        <ServiceForm onSubmit={handleCreateDependancy}>
+          <ServiceField>
+            <span>Dependency name</span>
+            <ServiceInput
+              value={dependancyName}
+              onChange={(event) => setDependancyName(event.target.value)}
+              placeholder="e.g. Axios"
+              aria-label="Dependency name"
+              disabled={isCreatingDependancy}
+              required
+            />
+          </ServiceField>
+          <ServiceField>
+            <span>Description (optional)</span>
+            <ServiceTextarea
+              value={dependancyDescription}
+              onChange={(event) => setDependancyDescription(event.target.value)}
+              placeholder="What does this dependency provide?"
+              aria-label="Dependency description"
+              disabled={isCreatingDependancy}
+              rows={2}
+            />
+          </ServiceField>
+          <PrimaryButton type="submit" disabled={isCreatingDependancy || !dependancyName.trim()}>
+            {isCreatingDependancy ? 'Adding...' : 'Add dependency'}
+          </PrimaryButton>
+        </ServiceForm>
+
+        <ServiceWrapper>
+          {dependanciesError && <InlineAlert role="alert">{dependanciesError}</InlineAlert>}
+
+          {isLoadingDependancies ? (
+            <ServiceStatus role="status">Loading dependencies from the API...</ServiceStatus>
+          ) : dependancies.length === 0 ? (
+            <ServiceList role="status">
+              <ServiceStatus>No dependencies found for this app yet.</ServiceStatus>
+            </ServiceList>
+          ) : (
+            <ServiceList aria-live="polite">
+              {dependancies.map((dependancy) => (
+                <ServiceMeta key={dependancy.id}>
+                  <ServiceName>{dependancy.name}</ServiceName>
+                  <ServiceDescription>
+                    {dependancy.description?.trim()
+                      ? dependancy.description
+                      : 'No description provided.'}
+                  </ServiceDescription>
+                  <ServiceActions>
+                    <DangerButton
+                      type="button"
+                      onClick={() => handleDeleteDependancy(dependancy.id)}
+                      disabled={deletingDependancyId === dependancy.id}
+                      aria-label={`Remove ${dependancy.name} dependency`}
+                    >
+                      {deletingDependancyId === dependancy.id ? 'Removing...' : 'Remove'}
+                    </DangerButton>
+                  </ServiceActions>
+                </ServiceMeta>
+              ))}
+            </ServiceList>
+          )}
+        </ServiceWrapper>
+      </ServicesLayout>
+    );
   }
 
   function renderServicesPanel() {
@@ -230,13 +404,7 @@ export default function AppModal({ app, onClose }) {
         </p>
       </div>
     ),
-    dependencies: (
-      <ul>
-        <li>React 18.0+</li>
-        <li>Axios client</li>
-        <li>Styled Components</li>
-      </ul>
-    ),
+    dependencies: renderDependenciesPanel(),
     services: renderServicesPanel(),
     models: (
       <ul>

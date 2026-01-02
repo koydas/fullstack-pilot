@@ -31,6 +31,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/services-service/, ''),
       },
+      '/dependancies-service': {
+        target: 'http://localhost:6060',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dependancies-service/, ''),
+      },
     },
   },
 });
