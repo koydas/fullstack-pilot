@@ -6,11 +6,22 @@ import {
   deleteService,
   fetchServices,
 } from '../../services/services/services-service.jsx';
+import {
+  createDependancy,
+  deleteDependancy,
+  fetchDependancies,
+} from '../../services/dependancies/dependancies-service.jsx';
 
 vi.mock('../../services/services/services-service.jsx', () => ({
   fetchServices: vi.fn(),
   createService: vi.fn(),
   deleteService: vi.fn(),
+}));
+
+vi.mock('../../services/dependancies/dependancies-service.jsx', () => ({
+  fetchDependancies: vi.fn(),
+  createDependancy: vi.fn(),
+  deleteDependancy: vi.fn(),
 }));
 
 const app = {
@@ -28,6 +39,9 @@ describe('AppModal', () => {
       description: 'Routes traffic to downstream services',
     });
     deleteService.mockResolvedValue({});
+    fetchDependancies.mockResolvedValue([]);
+    createDependancy.mockResolvedValue({ id: 'd2', name: 'Axios', description: '' });
+    deleteDependancy.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -100,6 +114,22 @@ describe('AppModal', () => {
 
     await screen.findByText('API Gateway');
     expect(fetchServices).toHaveBeenCalledWith('2');
+  });
+
+  it('scopes dependencies to the active app', async () => {
+    fetchDependancies.mockResolvedValueOnce([
+      { id: 'd1', name: 'Dep for app 1', appId: '1' },
+      { id: 'd2', name: 'Shared dep', appId: '2' },
+    ]);
+
+    const user = userEvent.setup();
+    render(<AppModal app={app} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('tab', { name: /dependencies/i }));
+
+    expect(fetchDependancies).toHaveBeenCalledWith('1');
+    await screen.findByText('Dep for app 1');
+    expect(screen.queryByText('Shared dep')).not.toBeInTheDocument();
   });
 
   it('calls onClose when backdrop or close button is clicked', async () => {

@@ -108,13 +108,13 @@ export default function AppModal({ app, onClose }) {
     }
   }, [activeTab, hasLoadedServices, app._id]);
 
-  function normalizeDependancy(item) {
+  function normalizeDependancy(item, fallbackAppId) {
     return {
       id: item.id ?? item.Id,
       name: item.name ?? item.Name,
       description: item.description ?? item.Description,
       createdAt: item.createdAt ?? item.CreatedAt,
-      appId: item.appId ?? item.AppId,
+      appId: item.appId ?? item.AppId ?? fallbackAppId,
     };
   }
 
@@ -123,11 +123,9 @@ export default function AppModal({ app, onClose }) {
       setIsLoadingDependancies(true);
       setDependanciesError('');
       const data = await fetchDependancies(app._id);
-      const normalized = data.map(normalizeDependancy);
-      const filtered = normalized.filter(
-        (dependancy) => !dependancy.appId || dependancy.appId === app._id,
-      );
-      setDependancies(filtered);
+      const normalized = data.map((dependancy) => normalizeDependancy(dependancy, app._id));
+      const scoped = normalized.filter((dependancy) => dependancy.appId === app._id);
+      setDependancies(scoped);
     } catch (error) {
       setDependanciesError(getErrorMessage(error, 'Could not load dependencies'));
     } finally {
@@ -147,7 +145,10 @@ export default function AppModal({ app, onClose }) {
         description: dependancyDescription.trim(),
       };
       const newDependancy = await createDependancy(payload, app._id);
-      setDependancies((previous) => [normalizeDependancy(newDependancy), ...previous]);
+      setDependancies((previous) => [
+        normalizeDependancy(newDependancy, app._id),
+        ...previous,
+      ]);
       setDependancyName('');
       setDependancyDescription('');
       setDependanciesError('');
