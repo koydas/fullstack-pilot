@@ -42,7 +42,7 @@ describe('AppModal', () => {
 
     await user.click(screen.getByRole('tab', { name: /services/i }));
 
-    expect(fetchServices).toHaveBeenCalled();
+    expect(fetchServices).toHaveBeenCalledWith(app._id);
     await screen.findByText(/no services found/i);
   });
 
@@ -57,10 +57,13 @@ describe('AppModal', () => {
     await user.type(screen.getByLabelText(/description/i), 'Handles routing');
     await user.click(screen.getByRole('button', { name: /add service/i }));
 
-    expect(createService).toHaveBeenCalledWith({
-      name: 'API Gateway',
-      description: 'Handles routing',
-    });
+    expect(createService).toHaveBeenCalledWith(
+      {
+        name: 'API Gateway',
+        description: 'Handles routing',
+      },
+      app._id
+    );
     await screen.findByText('API Gateway');
   });
 
@@ -77,8 +80,26 @@ describe('AppModal', () => {
     await screen.findByText('Database');
     await user.click(screen.getByRole('button', { name: /remove database service/i }));
 
-    await waitFor(() => expect(deleteService).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(deleteService).toHaveBeenCalledWith(1, app._id));
     await waitFor(() => expect(screen.queryByText('Database')).not.toBeInTheDocument());
+  });
+
+  it('reloads services when opening another app', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<AppModal app={app} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+    await screen.findByText(/no services found/i);
+    expect(fetchServices).toHaveBeenCalledWith('1');
+
+    const secondApp = { ...app, _id: '2', name: 'Second app' };
+    fetchServices.mockResolvedValueOnce([{ id: 99, name: 'API Gateway', description: '' }]);
+
+    rerender(<AppModal app={secondApp} onClose={() => {}} />);
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+
+    await screen.findByText('API Gateway');
+    expect(fetchServices).toHaveBeenCalledWith('2');
   });
 
   it('calls onClose when backdrop or close button is clicked', async () => {

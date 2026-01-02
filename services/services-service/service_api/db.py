@@ -26,46 +26,60 @@ class ServicesRepository:
                     CREATE TABLE IF NOT EXISTS services (
                         id SERIAL PRIMARY KEY,
                         name TEXT NOT NULL,
-                        description TEXT NOT NULL DEFAULT ''
+                        description TEXT NOT NULL DEFAULT '',
+                        app_id TEXT NOT NULL DEFAULT ''
                     )
+                    """
+                )
+                cursor.execute(
+                    """
+                    ALTER TABLE services
+                    ADD COLUMN IF NOT EXISTS app_id TEXT NOT NULL DEFAULT ''
                     """
                 )
                 connection.commit()
 
-    def list_services(self) -> List[Dict[str, str]]:
+    def list_services(self, app_id: str) -> List[Dict[str, str]]:
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
-                    "SELECT id, name, description FROM services ORDER BY id ASC"
+                    "SELECT id, name, description, app_id FROM services WHERE app_id = %s ORDER BY id ASC",
+                    (app_id,),
                 )
                 return list(cursor.fetchall())
 
-    def create_service(self, name: str, description: str) -> Dict[str, str]:
+    def create_service(self, name: str, description: str, app_id: str) -> Dict[str, str]:
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO services (name, description)
-                    VALUES (%s, %s)
-                    RETURNING id, name, description
+                    INSERT INTO services (name, description, app_id)
+                    VALUES (%s, %s, %s)
+                    RETURNING id, name, description, app_id
                     """,
-                    (name, description),
+                    (name, description, app_id),
                 )
                 service = cursor.fetchone()
                 connection.commit()
                 return dict(service)
 
-    def get_service(self, service_id: int) -> Optional[Dict[str, str]]:
+    def get_service(self, service_id: int, app_id: Optional[str] = None) -> Optional[Dict[str, str]]:
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
-                cursor.execute(
-                    "SELECT id, name, description FROM services WHERE id = %s",
-                    (service_id,),
-                )
+                if app_id:
+                    cursor.execute(
+                        "SELECT id, name, description, app_id FROM services WHERE id = %s AND app_id = %s",
+                        (service_id, app_id),
+                    )
+                else:
+                    cursor.execute(
+                        "SELECT id, name, description, app_id FROM services WHERE id = %s",
+                        (service_id,),
+                    )
                 service = cursor.fetchone()
                 return dict(service) if service else None
 
-    def update_service(self, service_id: int, updates: Dict[str, str]) -> Optional[Dict[str, str]]:
+    def update_service(self, service_id: int, updates: Dict[str, str], app_id: Optional[str] = None) -> Optional[Dict[str, str]]:
         if not updates:
             return None
 
@@ -77,22 +91,29 @@ class ServicesRepository:
                 set_clauses.append(f"{column} = %s")
                 params.append(updates[column])
 
-        params.append(service_id)
-
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
-                cursor.execute(
-                    f"UPDATE services SET {', '.join(set_clauses)} WHERE id = %s RETURNING id, name, description",
-                    params,
-                )
+                if app_id:
+                    cursor.execute(
+                        f"UPDATE services SET {', '.join(set_clauses)} WHERE id = %s AND app_id = %s RETURNING id, name, description, app_id",
+                        [*params, service_id, app_id],
+                    )
+                else:
+                    cursor.execute(
+                        f"UPDATE services SET {', '.join(set_clauses)} WHERE id = %s RETURNING id, name, description, app_id",
+                        [*params, service_id],
+                    )
                 service = cursor.fetchone()
                 connection.commit()
                 return dict(service) if service else None
 
-    def delete_service(self, service_id: int) -> bool:
+    def delete_service(self, service_id: int, app_id: Optional[str] = None) -> bool:
         with self.pool.connection() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM services WHERE id = %s", (service_id,))
+                if app_id:
+                    cursor.execute("DELETE FROM services WHERE id = %s AND app_id = %s", (service_id, app_id))
+                else:
+                    cursor.execute("DELETE FROM services WHERE id = %s", (service_id,))
                 deleted = cursor.rowcount > 0
                 connection.commit()
                 return deleted

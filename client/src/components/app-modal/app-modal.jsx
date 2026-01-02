@@ -71,16 +71,24 @@ export default function AppModal({ app, onClose }) {
   const [hasLoadedServices, setHasLoadedServices] = useState(false);
 
   useEffect(() => {
+    setServices([]);
+    setHasLoadedServices(false);
+    setServicesError('');
+    setServiceName('');
+    setServiceDescription('');
+  }, [app._id]);
+
+  useEffect(() => {
     if (activeTab === 'services' && !hasLoadedServices) {
       loadServices();
     }
-  }, [activeTab, hasLoadedServices]);
+  }, [activeTab, hasLoadedServices, app._id]);
 
   async function loadServices() {
     try {
       setIsLoadingServices(true);
       setServicesError('');
-      const data = await fetchServices();
+      const data = await fetchServices(app._id);
       setServices(data);
     } catch (error) {
       setServicesError(getErrorMessage(error, 'Could not load services'));
@@ -100,7 +108,7 @@ export default function AppModal({ app, onClose }) {
         name: serviceName.trim(),
         description: serviceDescription.trim(),
       };
-      const newService = await createService(payload);
+      const newService = await createService(payload, app._id);
       setServices((previous) => [newService, ...previous]);
       setServiceName('');
       setServiceDescription('');
@@ -115,7 +123,7 @@ export default function AppModal({ app, onClose }) {
   async function handleDeleteService(id) {
     try {
       setDeletingServiceId(id);
-      await deleteService(id);
+      await deleteService(id, app._id);
       setServices((previous) => previous.filter((service) => service.id !== id));
       setServicesError('');
     } catch (error) {
