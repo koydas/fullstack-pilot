@@ -114,7 +114,7 @@ export default function AppModal({ app, onClose }) {
       name: item.name ?? item.Name,
       description: item.description ?? item.Description,
       createdAt: item.createdAt ?? item.CreatedAt,
-      appId: item.appId ?? item.AppId ?? fallbackAppId,
+      appId: item.appId ?? item.AppId ?? fallbackAppId ?? null,
     };
   }
 
@@ -123,7 +123,7 @@ export default function AppModal({ app, onClose }) {
       setIsLoadingDependancies(true);
       setDependanciesError('');
       const data = await fetchDependancies(app._id);
-      const normalized = data.map((dependancy) => normalizeDependancy(dependancy, app._id));
+      const normalized = data.map((dependancy) => normalizeDependancy(dependancy));
       const scoped = normalized.filter((dependancy) => dependancy.appId === app._id);
       setDependancies(scoped);
     } catch (error) {
