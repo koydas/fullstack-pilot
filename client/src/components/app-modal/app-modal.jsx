@@ -114,6 +114,7 @@ export default function AppModal({ app, onClose }) {
       name: item.name ?? item.Name,
       description: item.description ?? item.Description,
       createdAt: item.createdAt ?? item.CreatedAt,
+      appId: item.appId ?? item.AppId,
     };
   }
 
@@ -121,8 +122,12 @@ export default function AppModal({ app, onClose }) {
     try {
       setIsLoadingDependancies(true);
       setDependanciesError('');
-      const data = await fetchDependancies();
-      setDependancies(data.map(normalizeDependancy));
+      const data = await fetchDependancies(app._id);
+      const normalized = data.map(normalizeDependancy);
+      const filtered = normalized.filter(
+        (dependancy) => !dependancy.appId || dependancy.appId === app._id,
+      );
+      setDependancies(filtered);
     } catch (error) {
       setDependanciesError(getErrorMessage(error, 'Could not load dependencies'));
     } finally {
@@ -141,7 +146,7 @@ export default function AppModal({ app, onClose }) {
         name: dependancyName.trim(),
         description: dependancyDescription.trim(),
       };
-      const newDependancy = await createDependancy(payload);
+      const newDependancy = await createDependancy(payload, app._id);
       setDependancies((previous) => [normalizeDependancy(newDependancy), ...previous]);
       setDependancyName('');
       setDependancyDescription('');
@@ -156,7 +161,7 @@ export default function AppModal({ app, onClose }) {
   async function handleDeleteDependancy(id) {
     try {
       setDeletingDependancyId(id);
-      await deleteDependancy(id);
+      await deleteDependancy(id, app._id);
       setDependancies((previous) => previous.filter((dependancy) => dependancy.id !== id));
       setDependanciesError('');
     } catch (error) {
