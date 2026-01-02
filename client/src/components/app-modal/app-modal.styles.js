@@ -131,6 +131,11 @@ export const SecondaryButton = styled.button`
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 export const DangerButton = styled.button`
@@ -146,4 +151,152 @@ export const DangerButton = styled.button`
     opacity: 0.6;
     cursor: not-allowed;
   }
+`;
+
+export const ServicesLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const ServiceSectionTitle = styled.h3`
+  margin: 0;
+  font-size: 1.15rem;
+`;
+
+export const ServiceIntro = styled.p`
+  margin: 0;
+  color: #475569;
+`;
+
+export const ServiceToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+`;
+
+export const ServiceToolbarText = styled.p`
+  margin: 0;
+  color: #0f172a;
+  font-weight: 700;
+`;
+
+export const ServiceToolbarActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+export const ServiceForm = styled.form`
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  align-items: end;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+`;
+
+export const ServiceField = styled.label`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+export const ServiceInput = styled.input`
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+
+  &:focus {
+    outline: 2px solid #38bdf8;
+    border-color: #38bdf8;
+  }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+  }
+`;
+
+export const ServiceTextarea = styled.textarea`
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  min-height: 72px;
+  resize: vertical;
+
+  &:focus {
+    outline: 2px solid #38bdf8;
+    border-color: #38bdf8;
+  }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+  }
+`;
+
+export const ServiceWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const InlineAlert = styled.div`
+  background: #fef2f2;
+  border: 1px solid #fecdd3;
+  color: #991b1b;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+`;
+
+export const ServiceList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const ServiceMeta = styled.article`
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
+`;
+
+export const ServiceName = styled.h4`
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+`;
+
+export const ServiceDescription = styled.p`
+  margin: 0;
+  color: #475569;
+`;
+
+export const ServiceActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+export const ServiceStatus = styled.p`
+  margin: 0;
+  color: #475569;
 `;
