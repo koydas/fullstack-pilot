@@ -1,6 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AppModal from './app-modal.jsx';
+import {
+  createService,
+  deleteService,
+  fetchServices,
+} from '../../services/services/services-service.jsx';
+
+vi.mock('../../services/services/services-service.jsx', () => ({
+  fetchServices: vi.fn(),
+  createService: vi.fn(),
+  deleteService: vi.fn(),
+}));
 
 const app = {
   _id: '1',
@@ -9,6 +20,20 @@ const app = {
 };
 
 describe('AppModal', () => {
+  beforeEach(() => {
+    fetchServices.mockResolvedValue([]);
+    createService.mockResolvedValue({
+      id: 2,
+      name: 'API Gateway',
+      description: 'Routes traffic to downstream services',
+    });
+    deleteService.mockResolvedValue({});
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('shows details by default and switches tabs', async () => {
     const user = userEvent.setup();
     render(<AppModal app={app} onClose={() => {}} />);
@@ -17,7 +42,64 @@ describe('AppModal', () => {
 
     await user.click(screen.getByRole('tab', { name: /services/i }));
 
-    expect(screen.getByText(/API Gateway/i)).toBeInTheDocument();
+    expect(fetchServices).toHaveBeenCalledWith(app._id);
+    await screen.findByText(/no services found/i);
+  });
+
+  it('creates a service from the services tab', async () => {
+    const user = userEvent.setup();
+    render(<AppModal app={app} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+    await screen.findByText(/no services found/i);
+
+    await user.type(screen.getByLabelText(/service name/i), 'API Gateway');
+    await user.type(screen.getByLabelText(/description/i), 'Handles routing');
+    await user.click(screen.getByRole('button', { name: /add service/i }));
+
+    expect(createService).toHaveBeenCalledWith(
+      {
+        name: 'API Gateway',
+        description: 'Handles routing',
+      },
+      app._id
+    );
+    await screen.findByText('API Gateway');
+  });
+
+  it('removes a service from the list', async () => {
+    fetchServices.mockResolvedValueOnce([
+      { id: 1, name: 'Database', description: 'PostgreSQL store' },
+    ]);
+
+    const user = userEvent.setup();
+    render(<AppModal app={app} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+
+    await screen.findByText('Database');
+    await user.click(screen.getByRole('button', { name: /remove database service/i }));
+
+    await waitFor(() => expect(deleteService).toHaveBeenCalledWith(1, app._id));
+    await waitFor(() => expect(screen.queryByText('Database')).not.toBeInTheDocument());
+  });
+
+  it('reloads services when opening another app', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<AppModal app={app} onClose={() => {}} />);
+
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+    await screen.findByText(/no services found/i);
+    expect(fetchServices).toHaveBeenCalledWith('1');
+
+    const secondApp = { ...app, _id: '2', name: 'Second app' };
+    fetchServices.mockResolvedValueOnce([{ id: 99, name: 'API Gateway', description: '' }]);
+
+    rerender(<AppModal app={secondApp} onClose={() => {}} />);
+    await user.click(screen.getByRole('tab', { name: /services/i }));
+
+    await screen.findByText('API Gateway');
+    expect(fetchServices).toHaveBeenCalledWith('2');
   });
 
   it('calls onClose when backdrop or close button is clicked', async () => {

@@ -9,16 +9,38 @@ def parse_payload(raw_payload: Any) -> Dict[str, Any]:
     return {}
 
 
-def validate_new_service(payload: Dict[str, Any]) -> Tuple[str, str]:
+DEFAULT_APP_ID = "default-app"
+
+
+def _normalize_app_id(raw_value: Any, *, required: bool = False) -> str:
+    if raw_value is None:
+        if required:
+            raise ValueError("Field 'appId' is required and must be a non-empty string")
+        return DEFAULT_APP_ID
+
+    if not isinstance(raw_value, str) or not raw_value.strip():
+        if required:
+            raise ValueError("Field 'appId' is required and must be a non-empty string")
+        return DEFAULT_APP_ID
+
+    return raw_value.strip()
+
+
+def validate_new_service(payload: Dict[str, Any]) -> Tuple[str, str, str]:
     name = payload.get("name")
     description = payload.get("description", "")
+    app_id = _normalize_app_id(payload.get("appId"))
 
     if not isinstance(name, str) or not name.strip():
         raise ValueError("Field 'name' is required and must be a non-empty string")
     if not isinstance(description, str):
         raise ValueError("Field 'description' must be a string")
 
-    return name.strip(), description.strip()
+    return name.strip(), description.strip(), app_id
+
+
+def validate_app_id_query_param(raw_value: Any) -> str:
+    return _normalize_app_id(raw_value)
 
 
 def validate_updates(payload: Dict[str, Any]) -> Dict[str, str]:

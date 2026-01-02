@@ -3,7 +3,12 @@ from __future__ import annotations
 from flask import Blueprint, abort, current_app, jsonify, request, url_for
 
 from .db import ServicesRepository
-from .validation import parse_payload, validate_new_service, validate_updates
+from .validation import (
+    parse_payload,
+    validate_app_id_query_param,
+    validate_new_service,
+    validate_updates,
+)
 
 services_bp = Blueprint("services", __name__, url_prefix="/api/services")
 
@@ -12,8 +17,8 @@ def _repository() -> ServicesRepository:
     return current_app.config["REPOSITORY"]
 
 
-def _ensure_service_or_404(service_id: int):
-    service = _repository().get_service(service_id)
+def _ensure_service_or_404(service_id: int, app_id: str):
+    service = _repository().get_service(service_id, app_id)
     if service is None:
         abort(404, description="Service not found")
     return service
@@ -21,7 +26,12 @@ def _ensure_service_or_404(service_id: int):
 
 @services_bp.get("")
 def list_services():
-    services = _repository().list_services()
+    try:
+        app_id = validate_app_id_query_param(request.args.get("appId"))
+    except ValueError as exc:
+        abort(400, description=str(exc))
+
+    services = _repository().list_services(app_id)
     return jsonify(services)
 
 
@@ -30,21 +40,28 @@ def create_service():
     payload = parse_payload(request.get_json(silent=True))
 
     try:
-        name, description = validate_new_service(payload)
+        name, description, app_id = validate_new_service(payload)
     except ValueError as exc:
         abort(400, description=str(exc))
 
-    service = _repository().create_service(name, description)
+    service = _repository().create_service(name, description, app_id)
 
     response = jsonify(service)
     response.status_code = 201
-    response.headers["Location"] = url_for("services.get_service", service_id=service["id"])
+    response.headers["Location"] = url_for(
+        "services.get_service", service_id=service["id"], appId=service["app_id"]
+    )
     return response
 
 
 @services_bp.get("/<int:service_id>")
 def get_service(service_id: int):
-    service = _ensure_service_or_404(service_id)
+    try:
+        app_id = validate_app_id_query_param(request.args.get("appId"))
+    except ValueError as exc:
+        abort(400, description=str(exc))
+
+    service = _ensure_service_or_404(service_id, app_id)
     return jsonify(service)
 
 
@@ -54,10 +71,11 @@ def update_service(service_id: int):
 
     try:
         updates = validate_updates(payload)
+        app_id = validate_app_id_query_param(request.args.get("appId"))
     except ValueError as exc:
         abort(400, description=str(exc))
 
-    service = _repository().update_service(service_id, updates)
+    service = _repository().update_service(service_id, updates, app_id)
     if service is None:
         abort(404, description="Service not found")
 
@@ -66,7 +84,12 @@ def update_service(service_id: int):
 
 @services_bp.delete("/<int:service_id>")
 def delete_service(service_id: int):
-    service = _repository().delete_service(service_id)
+    try:
+        app_id = validate_app_id_query_param(request.args.get("appId"))
+    except ValueError as exc:
+        abort(400, description=str(exc))
+
+    service = _repository().delete_service(service_id, app_id)
     if not service:
         abort(404, description="Service not found")
     return "", 204
