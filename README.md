@@ -51,6 +51,10 @@
 - **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+
+## Decisions
+- [Architecture Decision Records (ADRs)](docs/adr/README.md)
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
