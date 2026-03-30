@@ -31,11 +31,15 @@ def register_monitoring(app: Flask) -> None:
     def _log_response(response):
         duration_ms = _elapsed_ms(g.get("request_start_time"))
         logger.info(
-            "Handled %s %s -> %s in %.2f ms",
-            request.method,
-            request.path,
-            response.status_code,
-            duration_ms,
+            "request completed",
+            extra={
+                "context": {
+                    "method": request.method,
+                    "path": request.path,
+                    "status_code": response.status_code,
+                    "duration_ms": round(duration_ms, 2),
+                }
+            },
         )
         return response
 
@@ -46,10 +50,13 @@ def register_monitoring(app: Flask) -> None:
 
         duration_ms = _elapsed_ms(g.get("request_start_time"))
         logger.error(
-            "Unhandled error for %s %s after %.2f ms",
-            request.method,
-            request.path,
-            duration_ms,
+            "unhandled error",
+            extra={
+                "context": {
+                    "method": request.method,
+                    "path": request.path,
+                    "duration_ms": round(duration_ms, 2),
+                }
+            },
             exc_info=exc,
         )
-

@@ -1,16 +1,23 @@
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
 import { monitoringMiddleware } from './middleware/monitoring.js';
 import { getActiveServices } from './servicesResolver.js';
+import { logger } from './logger.js';
 
 export function createApp({ serviceName, serviceBasePath }) {
   const app = express();
 
   app.use(cors());
   app.use(express.json());
-  app.use(morgan('dev'));
   app.use(monitoringMiddleware);
+
+  app.get('/healthz', (_req, res) => {
+    res.json({
+      status: 'ok',
+      uptime: Number(process.uptime().toFixed(3)),
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   const activeServices = getActiveServices(serviceName);
 
@@ -23,12 +30,12 @@ export function createApp({ serviceName, serviceBasePath }) {
       );
     }
 
-    console.log(`Registering service "${name}" at ${mountPath}`);
+    logger.info({ mountedService: name, mountPath }, 'service router registered');
     app.use(mountPath, router);
   });
 
   app.use((err, _req, res, _next) => {
-    console.error('Unhandled error:', err);
+    logger.error({ err }, 'unhandled error');
     res.status(500).json({ error: 'Internal server error' });
   });
 
