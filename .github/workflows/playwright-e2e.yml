@@ -28,6 +28,9 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: client
 
-      - name: Run Playwright tests
+      # No docker compose startup is required for this workflow because the
+      # Playwright E2E spec intercepts and mocks the backend API routes
+      # (for example, **/api/apps and **/api/apps/* in client/e2e/app-workflow.spec.js).
+      - name: Run Playwright tests (frontend with mocked API)
         run: npm run test:e2e
         working-directory: client
