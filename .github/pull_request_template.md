@@ -1,0 +1,4 @@
+- [ ] All CI checks pass
+- [ ] README.md updated if behaviour changed
+- [ ] ADR created or updated if an architectural decision was made
+- [ ] New service registered in discover-services.js and smoke tests added if applicable
