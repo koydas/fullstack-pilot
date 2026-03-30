@@ -36,8 +36,8 @@ def register_monitoring(app: Flask) -> None:
                 "context": {
                     "method": request.method,
                     "path": request.path,
-                    "status_code": response.status_code,
-                    "duration_ms": round(duration_ms, 2),
+                    "statusCode": response.status_code,
+                    "durationMs": round(duration_ms, 2),
                 }
             },
         )
@@ -55,7 +55,7 @@ def register_monitoring(app: Flask) -> None:
                 "context": {
                     "method": request.method,
                     "path": request.path,
-                    "duration_ms": round(duration_ms, 2),
+                    "durationMs": round(duration_ms, 2),
                 }
             },
             exc_info=exc,
