@@ -51,6 +51,38 @@
 - **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+
+## Observability
+Both backend services expose a lightweight health endpoint and structured JSON logs.
+
+### Health checks
+- **apps-service:** `GET http://localhost:4000/healthz`
+- **services-service:** `GET http://localhost:5000/healthz`
+
+Expected response shape for both:
+```json
+{ "status": "ok", "uptime": 12.345, "timestamp": "2026-03-30T03:21:00.000Z" }
+```
+
+### Log format
+- **apps-service (Node/Express):** `pino` JSON logs with fields
+  `{ level, time, service: "apps-service", msg, ...context }`.
+- **services-service (Flask):** Python `logging` + custom JSON formatter with fields
+  `{ level, time, service: "services-service", msg, ...context }`.
+
+### Quick verification
+```bash
+# Health endpoints
+curl -s http://localhost:4000/healthz
+curl -s http://localhost:5000/healthz
+
+# Generate logs
+curl -s "http://localhost:4000/api/apps"
+curl -s "http://localhost:5000/api/services?appId=demo"
+```
+
+If services are running, you should see JSON log lines for each request including method/path/status and duration context.
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependanciesDb`).
