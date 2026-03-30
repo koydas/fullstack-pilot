@@ -17,7 +17,7 @@
 
 ## Goals / Non-goals
 - **Goals:** show end-to-end CRUD across a polyglot data layer (MongoDB, PostgreSQL, SQL Server), demonstrate multi-service wiring, and keep setup friction low.
-- **Non-goals:** production hardening (auth, observability), extensive test coverage, or cloud-specific deployment templates.
+- **Non-goals:** production auth, extensive test coverage, or cloud-specific deployment templates.
 
 ## Prerequisites
 - Node.js (18+ recommended)
