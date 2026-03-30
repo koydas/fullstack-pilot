@@ -53,8 +53,8 @@
 
 
 ## Observability
-- **apps-service (Node/Express):** `GET /healthz` returns JSON with `status`, `uptime` (seconds), and `timestamp` (ISO-8601). The service now emits structured JSON logs with `pino` in the format `{ level, time, service, msg, ...context }`.
-- **services-service (Flask):** `GET /healthz` returns the same JSON shape. The service now emits structured JSON logs through Python's `logging` module using a custom JSON formatter with `{ level, time, service, msg, ...context }`.
+- **apps-service (Node/Express):** `GET /healthz` returns JSON with `status`, `uptime` (seconds), and `timestamp` (ISO-8601). Endpoint example in local/compose: `http://localhost:4000/healthz`. Logs are emitted as structured JSON with `pino` in the format `{ level, time, service, msg, ...context }`.
+- **services-service (Flask):** `GET /healthz` returns the same JSON shape. Endpoint example in local/compose: `http://localhost:5000/healthz`. Logs are emitted as structured JSON through Python's `logging` module using a custom JSON formatter with `{ level, time, service, msg, ...context }`.
 
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.

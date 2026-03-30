@@ -12,7 +12,7 @@ class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "level": record.levelname.lower(),
-            "time": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "time": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat().replace("+00:00", "Z"),
             "service": SERVICE_NAME,
             "msg": record.getMessage(),
         }

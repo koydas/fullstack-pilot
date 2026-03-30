@@ -31,7 +31,7 @@ def create_app() -> Flask:
             {
                 "status": "ok",
                 "uptime": round(uptime, 3),
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             }
         )
 
