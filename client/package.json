@@ -24,7 +24,7 @@
     "@playwright/test": "^1.47.0",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
-    "happy-dom": "^15.11.7",
+    "happy-dom": "^20.8.9",
     "jsdom": "^24.1.0",
     "eslint": "^8.57.0",
     "@vitejs/plugin-react": "^4.2.0",
