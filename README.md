@@ -55,6 +55,29 @@
 ## Decisions
 - [Architecture Decision Records (ADRs)](docs/adr/README.md)
 
+## Logging
+- **Goal**: each backend emits HTTP request logs (method, path, status, duration) to simplify local debugging and containerized monitoring.
+- **Standard output**: services write logs to `stdout`/`stderr`, so they are visible with `docker compose logs -f <service>`.
+
+### Service details
+- **apps-service (Node/Express)**  
+  - `pino` logger with a `service: "apps-service"` field.
+  - Monitoring middleware logs at the end of each request: `method`, `path`, `statusCode`, `durationMs`, and message `"request completed"`.
+- **services-service (Flask/Python)**  
+  - Structured JSON logging via a custom `JsonFormatter` (`level`, `time`, `service`, `msg` + context).
+  - Flask `before_request`/`after_request`/`teardown_request` hooks to trace requests and unhandled errors.
+- **dependencies-service (.NET)**  
+  - `MonitoringMiddleware` logs each request with `Method`, `Path`, `StatusCode`, and `ElapsedMilliseconds`.
+  - Uses `ILogger` (native ASP.NET Core pipeline), compatible with standard log collectors.
+
+### Useful examples
+- View logs for a service:
+  - `docker compose logs -f apps-service`
+  - `docker compose logs -f services-service`
+  - `docker compose logs -f dependencies-service`
+- Quickly filter errors:
+  - `docker compose logs services-service | rg -i "error|exception"`
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
