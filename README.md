@@ -51,6 +51,18 @@
 - **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## GitOps & Deployment
+The `.gitops/` directory is the declarative deployment source for ArgoCD. It stores ArgoCD Application manifests for each deployable unit, including:
+- `.gitops/client-application.yaml`
+- `.gitops/server-application.yaml`
+- `.gitops/apps-service-application.yaml`
+- `.gitops/services-service-application.yaml`
+- `.gitops/dependancies-service-application.yaml`
+
+In a GitOps flow, ArgoCD watches this repository/branch, reads these Application specs, and continuously reconciles cluster state to match Git. Any manifest change merged to the tracked branch becomes the desired state; ArgoCD then syncs and reports drift/health.
+
+Promotion can follow either strategy: (1) **branch-based** (`dev` → `staging`), where each environment tracks its branch and promotion is a merge; or (2) **git-diff/PR-based**, where the same branch is used but environment-specific manifest deltas are promoted by pull request. In both cases, promotion is auditable because environment changes are plain Git commits.
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependanciesDb`).
