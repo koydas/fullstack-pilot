@@ -1,5 +1,6 @@
 # Build the Vite frontend
-FROM node:18-alpine AS build
+# Vite 8 requires Node.js >=20.19 (or >=22.12), so the build stage must not use Node 18.
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --ignore-scripts
