@@ -44,13 +44,43 @@
    - .NET service: `npm run start:dependencies-service` (port 6060, needs SQL Server credentials from `MSSQL_SA_PASSWORD`).
 
 ## Architecture overview
-- **client (5173)** → React/Vite UI served via Nginx in Compose; proxies `/api` to the Node API.
-- **apps-service (4000)** → Node/Express CRUD API backed by MongoDB.
-- **services-service (5000)** → Flask CRUD service using PostgreSQL.
-- **dependencies-service (6060)** → .NET 8 API using SQL Server (Swagger at `/swagger`).
-- **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
+This repo intentionally splits responsibilities across independent services so each boundary demonstrates a practical technology choice and the data ownership model behind it, rather than a single “best stack” answer.
+
+- **client (React/Vite + Nginx, port 5173)**
+  - **Why this choice:** React/Vite keeps local feedback loops fast and familiar for frontend-heavy teams, while Nginx provides a production-like static hosting and reverse-proxy edge in Compose.
+  - **Data ownership boundary:** The client owns UI state and interaction flow, but does not own persistent business data; it consumes backend APIs as the system of record.
+  - **Trade-off:** Fast iteration and simple deployment at the edge vs. added complexity of managing API contracts and proxy behavior between UI and services.
+
+- **apps-service (Node/Express + MongoDB, port 4000)**
+  - **Why this choice:** Node/Express minimizes ceremony for CRUD APIs and aligns with JavaScript-heavy teams; MongoDB complements this with schema-flexible documents for quickly evolving payloads.
+  - **Data ownership boundary:** This service is the source of truth for its document domain and owns lifecycle rules for Mongo-backed records.
+  - **Trade-off:** High development speed and flexible schema evolution vs. weaker relational guarantees than a normalized SQL model.
+
+- **services-service (Flask + PostgreSQL, port 5000)**
+  - **Why this choice:** Flask provides a lightweight Python service surface, and PostgreSQL offers mature relational modeling and transactional integrity for structured entities.
+  - **Data ownership boundary:** This service owns relational data and consistency rules that benefit from SQL constraints and ACID transactions.
+  - **Trade-off:** Strong integrity and query power vs. more up-front schema design and migration discipline than document stores.
+
+- **dependencies-service (.NET 8 + SQL Server, port 6060)**
+  - **Why this choice:** .NET 8 demonstrates enterprise-oriented service implementation, and SQL Server reflects compatibility with common Microsoft-centric production environments.
+  - **Data ownership boundary:** This service owns SQL Server-backed dependency data and encapsulates its contract through its API and Swagger surface.
+  - **Trade-off:** Strong tooling and enterprise interoperability vs. a heavier runtime/toolchain footprint for local contributors.
+
+- **databases (MongoDB, PostgreSQL, SQL Server)**
+  - **Why this choice:** Running all three datastores locally demonstrates polyglot persistence patterns and lets each service use the storage model that best matches its domain constraints.
+  - **Data ownership boundary:** Each datastore is scoped to its owning service boundary rather than shared as a single cross-service schema.
+  - **Trade-off:** Clear ownership and fit-for-purpose storage vs. increased operational overhead in local setup, CI, and developer onboarding.
+
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## Architecture decisions
+- **Service isolation.** Each backend is independently runnable, testable, and containerized so teams can iterate or replace one service without tightly coupling release cadence to the others; this increases resilience of change but also introduces cross-service contract and orchestration overhead.
+
+- **Polyglot persistence.** The repo intentionally pairs services with different datastores (MongoDB, PostgreSQL, SQL Server) to show that storage is a domain decision, not a one-size-fits-all platform choice; this improves data-model fit while making operations and skill requirements broader.
+
+- **GitOps deployment model.** Deployment artifacts and automation live alongside source so infrastructure changes follow the same review and versioning workflow as application code; this improves traceability and repeatability, with the trade-off of maintaining deployment manifests as first-class code.
+
+- **Local-first developer experience.** Docker Compose, helper scripts, and dev-friendly defaults prioritize “clone and run” onboarding for mixed-language services; this reduces setup friction but accepts some parity gaps versus hardened production environments.
 
 ## Decisions
 - [Architecture Decision Records (ADRs)](docs/adr/README.md)
