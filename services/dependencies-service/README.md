@@ -1,13 +1,13 @@
-# Dependancies Service
+# Dependencies Service
 
-A .NET 8 controller-based API that exposes CRUD operations for dependancies. Storage uses Microsoft SQL Server so data persists across restarts.
+A .NET 8 controller-based API that exposes CRUD operations for dependencies. Storage uses Microsoft SQL Server so data persists across restarts.
 
 ## Prerequisites
 - .NET 8 SDK installed locally.
 
 ## Run the service
 ```bash
-cd services/dependancies-service
+cd services/dependencies-service
 dotnet restore
 dotnet run
 ```
@@ -16,35 +16,35 @@ The API starts on `https://localhost:5001` or `http://localhost:5000` by default
 
 ### SQL Server
 
-The service expects a `DependanciesDb` connection string. When running locally without Docker, it defaults to `Server=localhost,1433;Database=DependanciesDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;`. Override this by setting `ConnectionStrings__DependanciesDb`.
+The service expects a `DependenciesDb` connection string. When running locally without Docker, it defaults to `Server=localhost,1433;Database=DependenciesDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True;`. Override this by setting `ConnectionStrings__DependenciesDb`.
 
 `docker-compose.yml` includes an `mssql` service that exposes SQL Server on port `1433`. Bring the stack up with Docker Compose to start both the database and the API together.
 
 ## Endpoints
-- `GET /api/dependancies` – list all dependancies
-- `GET /api/dependancies/{id}` – get a dependancy by id
-- `POST /api/dependancies` – create a dependancy `{ "name": "Name", "description": "Optional" }`
-- `PUT /api/dependancies/{id}` – update an existing dependancy
-- `DELETE /api/dependancies/{id}` – delete a dependancy
+- `GET /api/dependencies` – list all dependencies
+- `GET /api/dependencies/{id}` – get a dependancy by id
+- `POST /api/dependencies` – create a dependancy `{ "name": "Name", "description": "Optional" }`
+- `PUT /api/dependencies/{id}` – update an existing dependancy
+- `DELETE /api/dependencies/{id}` – delete a dependancy
 
 ## Request examples
 Create a dependancy:
 ```bash
-curl -X POST http://localhost:5000/api/dependancies \
+curl -X POST http://localhost:5000/api/dependencies \
   -H "Content-Type: application/json" \
   -d '{"name":"New dependancy","description":".NET demo"}'
 ```
 
 Update a dependancy:
 ```bash
-curl -X PUT http://localhost:5000/api/dependancies/<ID> \
+curl -X PUT http://localhost:5000/api/dependencies/<ID> \
   -H "Content-Type: application/json" \
   -d '{"name":"Updated name","description":"New description"}'
 ```
 
 Delete a dependancy:
 ```bash
-curl -X DELETE http://localhost:5000/api/dependancies/<ID>
+curl -X DELETE http://localhost:5000/api/dependencies/<ID>
 ```
 
 ## Monitoring

@@ -1,15 +1,15 @@
-using DependanciesService.Data;
-using DependanciesService.Services;
-using DependanciesService.Middlewares;
-using DependanciesService.Models;
+using DependenciesService.Data;
+using DependenciesService.Services;
+using DependenciesService.Middlewares;
+using DependenciesService.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DependanciesDb")
-    ?? throw new InvalidOperationException("Connection string 'DependanciesDb' not configured.");
+var connectionString = builder.Configuration.GetConnectionString("DependenciesDb")
+    ?? throw new InvalidOperationException("Connection string 'DependenciesDb' not configured.");
 
-builder.Services.AddDbContext<DependanciesDbContext>(options =>
+builder.Services.AddDbContext<DependenciesDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IDependancyRepository, DependancyRepository>();
@@ -21,12 +21,12 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<DependanciesDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<DependenciesDbContext>();
     db.Database.EnsureCreated();
 
-    if (!db.Dependancies.Any())
+    if (!db.Dependencies.Any())
     {
-        db.Dependancies.Add(new Dependancy
+        db.Dependencies.Add(new Dependancy
         {
             Name = "Starter dependancy",
             Description = "Example payload to prove the API is working."

@@ -8,5 +8,5 @@ resources:
   - deployment.yaml
   - service.yaml
 images:
-  - name: ghcr.io/koydas/fullstack-pilot/dependancies-service
+  - name: ghcr.io/koydas/fullstack-pilot/dependencies-service
     newTag: latest

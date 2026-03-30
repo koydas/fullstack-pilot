@@ -20,7 +20,7 @@
     "start:mongo-db": "cd databases/mongo-db && docker compose up -d --build",
     "start:postgre": "cd databases/postgre && ./start.sh",
     "start:mssql": "cd databases/mssql && ./start.sh",
-    "start:dependancies-service": "cd services/dependancies-service && dotnet run",
+    "start:dependencies-service": "cd services/dependencies-service && dotnet run",
     "start:services-service": "cd services/services-service && python app.py"
   },
   "repository": {

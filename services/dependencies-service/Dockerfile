@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY DependanciesService.csproj ./
+COPY DependenciesService.csproj ./
 RUN dotnet restore
 COPY . .
 RUN dotnet publish -c Release -o /app/out
@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /app/out ./
 ENV ASPNETCORE_URLS=http://+:6060
 EXPOSE 6060
-ENTRYPOINT ["dotnet", "DependanciesService.dll"]
+ENTRYPOINT ["dotnet", "DependenciesService.dll"]

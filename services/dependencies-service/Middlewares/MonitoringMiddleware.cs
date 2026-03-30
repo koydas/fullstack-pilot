@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace DependanciesService.Middlewares;
+namespace DependenciesService.Middlewares;
 
 public class MonitoringMiddleware
 {

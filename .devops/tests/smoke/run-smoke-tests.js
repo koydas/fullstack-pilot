@@ -39,13 +39,13 @@ const services = [
       ),
   },
   {
-    name: 'dependancies-service',
+    name: 'dependencies-service',
     run: () =>
       runHttpTest(
-        process.env.SMOKE_DEPENDANCIES_SERVICE_URL || 'http://localhost:6060/api/dependancies',
+        process.env.SMOKE_DEPENDENCIES_SERVICE_URL || 'http://localhost:6060/api/dependencies',
         (response) =>
           expectJsonArray(response, {
-            context: 'dependancies catalogue',
+            context: 'dependencies catalogue',
             minLength: 1,
           }),
       ),

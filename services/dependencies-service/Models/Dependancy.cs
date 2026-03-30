@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DependanciesService.Models;
+namespace DependenciesService.Models;
 
 public class Dependancy
 {

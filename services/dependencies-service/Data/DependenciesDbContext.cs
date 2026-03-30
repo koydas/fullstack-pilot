@@ -1,15 +1,15 @@
-using DependanciesService.Models;
+using DependenciesService.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DependanciesService.Data;
+namespace DependenciesService.Data;
 
-public class DependanciesDbContext : DbContext
+public class DependenciesDbContext : DbContext
 {
-    public DependanciesDbContext(DbContextOptions<DependanciesDbContext> options) : base(options)
+    public DependenciesDbContext(DbContextOptions<DependenciesDbContext> options) : base(options)
     {
     }
 
-    public DbSet<Dependancy> Dependancies => Set<Dependancy>();
+    public DbSet<Dependancy> Dependencies => Set<Dependancy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
