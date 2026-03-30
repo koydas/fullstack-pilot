@@ -84,6 +84,9 @@ This repo intentionally splits responsibilities across independent services so e
 
 ## Decisions
 - [Architecture Decision Records (ADRs)](docs/adr/README.md)
+- [ADR-001: Polyglot persistence](docs/adr/ADR-001-polyglot-persistence.md)
+- [ADR-002: Service boundaries](docs/adr/ADR-002-service-boundaries.md)
+- [ADR-003: GitOps model](docs/adr/ADR-003-gitops-model.md)
 
 ## Logging
 - **Goal**: each backend emits HTTP request logs (method, path, status, duration) to simplify local debugging and containerized monitoring.
