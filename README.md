@@ -123,6 +123,29 @@ In a GitOps flow, ArgoCD watches this repository/branch and reconciles cluster s
 
 Promotion typically follows an ordered git workflow: merge to `dev` first, validate, then promote the exact commit to `staging` (for example via PR branch promotion or a controlled `git diff`/cherry-pick process). This keeps environment changes auditable and reproducible, because promotions are Git history changes rather than imperative kubectl actions.
 
+## Observability
+Health endpoints are exposed by both backend APIs to support lightweight runtime checks in local development and container orchestration.
+
+### apps-service health check (Node/Express)
+- **Endpoint:** `GET http://localhost:4000/healthz`
+- **Response shape:** JSON object with `{ status, uptime, timestamp }`
+  - `status`: service health indicator (typically `"ok"`).
+  - `uptime`: process uptime in seconds.
+  - `timestamp`: ISO-8601 server timestamp when the check was generated.
+- **Use case:** liveness probe and load balancer target health verification.
+- **Local test:**
+  - `curl -s http://localhost:4000/healthz`
+
+### services-service health check (Flask)
+- **Endpoint:** `GET http://localhost:5000/healthz`
+- **Response shape:** JSON object with `{ status, uptime, timestamp }`
+  - `status`: service health indicator (typically `"ok"`).
+  - `uptime`: process uptime in seconds.
+  - `timestamp`: ISO-8601 server timestamp when the check was generated.
+- **Use case:** liveness probe and load balancer target health verification.
+- **Local test:**
+  - `curl -s http://localhost:5000/healthz`
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
