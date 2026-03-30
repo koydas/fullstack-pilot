@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fullstack-pilot-dependancies-service
+  name: fullstack-pilot-dependencies-service
   namespace: argocd
   labels:
     app.kubernetes.io/part-of: fullstack-pilot
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/koydas/fullstack-pilot.git
     targetRevision: main
-    path: services/dependancies-service/.devops
+    path: services/dependencies-service/.devops
   destination:
     server: https://kubernetes.default.svc
     namespace: fullstack-pilot

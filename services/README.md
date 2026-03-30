@@ -11,7 +11,7 @@ Each folder provides the deployment, service, and supporting resources for the c
    kubectl apply -f deploy/gitops/client-application.yaml
    kubectl apply -f deploy/gitops/apps-service-application.yaml
    kubectl apply -f deploy/gitops/services-service-application.yaml
-   kubectl apply -f deploy/gitops/dependancies-service-application.yaml
+   kubectl apply -f deploy/gitops/dependencies-service-application.yaml
    ```
 2. Update the container image references as needed (for example via Kustomize image overrides or Argo CD parameters).
 3. Configure secrets such as `MONGODB_URI` with the values for your cluster before promoting beyond development.

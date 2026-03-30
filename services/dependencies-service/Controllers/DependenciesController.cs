@@ -1,23 +1,23 @@
-using DependanciesService.Models;
-using DependanciesService.Services;
+using DependenciesService.Models;
+using DependenciesService.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DependanciesService.Controllers;
+namespace DependenciesService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DependanciesController : ControllerBase
+public class DependenciesController : ControllerBase
 {
     private readonly IDependancyRepository _repository;
 
-    public DependanciesController(IDependancyRepository repository)
+    public DependenciesController(IDependancyRepository repository)
     {
         _repository = repository;
     }
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Dependancy>>> GetDependancies()
+    public async Task<ActionResult<IEnumerable<Dependancy>>> GetDependencies()
     {
         return Ok(await _repository.GetAllAsync());
     }

@@ -41,18 +41,18 @@
 4. In another terminal: `npm run start:client` (starts Vite on http://localhost:5173 with proxying to the API).
 5. Optional extras (run with their own prerequisites):
    - Flask service: `npm run start:services-service` (port 5000, needs PostgreSQL at `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`).
-   - .NET service: `npm run start:dependancies-service` (port 6060, needs SQL Server credentials from `MSSQL_SA_PASSWORD`).
+   - .NET service: `npm run start:dependencies-service` (port 6060, needs SQL Server credentials from `MSSQL_SA_PASSWORD`).
 
 ## Architecture overview
 - **client (5173)** → React/Vite UI served via Nginx in Compose; proxies `/api` to the Node API.
 - **apps-service (4000)** → Node/Express CRUD API backed by MongoDB.
 - **services-service (5000)** → Flask CRUD service using PostgreSQL.
-- **dependancies-service (6060)** → .NET 8 API using SQL Server (Swagger at `/swagger`).
+- **dependencies-service (6060)** → .NET 8 API using SQL Server (Swagger at `/swagger`).
 - **databases** → MongoDB (27017), PostgreSQL (5432), SQL Server (1433) helpers for local/dev.
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
-- **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependanciesDb`).
+- **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
 - **Adding a service:** create `services/<new-service>`, include a runnable dev script (`npm run dev` or `start`), add a Dockerfile, expose a unique port, and wire it into `docker-compose.yml` (and `.devops` manifests if you want GitOps support).
 - **Scripts to know:** `npm run init` installs all service/client dependencies; `npm run start:services` starts every service that has a `dev`/`start` script; smoke tests live under `.devops/tests/smoke/`.

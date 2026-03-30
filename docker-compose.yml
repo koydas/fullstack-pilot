@@ -59,13 +59,13 @@ services:
     ports:
       - "5000:5000"
 
-  dependancies-service:
-    build: ./services/dependancies-service
-    container_name: fullstack-pilot-dependancies-service
+  dependencies-service:
+    build: ./services/dependencies-service
+    container_name: fullstack-pilot-dependencies-service
     environment:
       ASPNETCORE_URLS: http://+:6060
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DependanciesDb: Server=mssql,1433;Database=DependanciesDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True;
+      ConnectionStrings__DependenciesDb: Server=mssql,1433;Database=DependenciesDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd};TrustServerCertificate=True;
     depends_on:
       - mssql
     ports:

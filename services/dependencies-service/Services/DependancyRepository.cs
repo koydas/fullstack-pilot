@@ -1,8 +1,8 @@
-using DependanciesService.Models;
-using DependanciesService.Data;
+using DependenciesService.Models;
+using DependenciesService.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace DependanciesService.Services;
+namespace DependenciesService.Services;
 
 public interface IDependancyRepository
 {
@@ -15,30 +15,30 @@ public interface IDependancyRepository
 
 public class DependancyRepository : IDependancyRepository
 {
-    private readonly DependanciesDbContext _context;
+    private readonly DependenciesDbContext _context;
 
-    public DependancyRepository(DependanciesDbContext context)
+    public DependancyRepository(DependenciesDbContext context)
     {
         _context = context;
     }
 
     public async Task<IEnumerable<Dependancy>> GetAllAsync() =>
-        await _context.Dependancies.AsNoTracking().OrderBy(p => p.CreatedAt).ToListAsync();
+        await _context.Dependencies.AsNoTracking().OrderBy(p => p.CreatedAt).ToListAsync();
 
     public async Task<Dependancy?> GetAsync(Guid id) =>
-        await _context.Dependancies.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+        await _context.Dependencies.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
 
     public async Task<Dependancy> CreateAsync(Dependancy dependancy)
     {
         dependancy.CreatedAt = DateTime.UtcNow;
-        _context.Dependancies.Add(dependancy);
+        _context.Dependencies.Add(dependancy);
         await _context.SaveChangesAsync();
         return dependancy;
     }
 
     public async Task<Dependancy?> UpdateAsync(Guid id, Dependancy updated)
     {
-        var existing = await _context.Dependancies.FirstOrDefaultAsync(p => p.Id == id);
+        var existing = await _context.Dependencies.FirstOrDefaultAsync(p => p.Id == id);
 
         if (existing is null)
         {
@@ -54,14 +54,14 @@ public class DependancyRepository : IDependancyRepository
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        var existing = await _context.Dependancies.FirstOrDefaultAsync(p => p.Id == id);
+        var existing = await _context.Dependencies.FirstOrDefaultAsync(p => p.Id == id);
 
         if (existing is null)
         {
             return false;
         }
 
-        _context.Dependancies.Remove(existing);
+        _context.Dependencies.Remove(existing);
         await _context.SaveChangesAsync();
         return true;
     }
