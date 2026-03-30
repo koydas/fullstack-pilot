@@ -108,6 +108,18 @@ This repo intentionally splits responsibilities across independent services so e
 - Quickly filter errors:
   - `docker compose logs services-service | rg -i "error|exception"`
 
+## GitOps & Deployment
+The `.gitops/` directory stores ArgoCD `Application` manifests for each deployable workload, keeping deployment intent versioned with the app code. In this repo, those manifests are:
+- `.gitops/client-application.yaml`
+- `.gitops/apps-service-application.yaml`
+- `.gitops/services-service-application.yaml`
+- `.gitops/dependencies-service-application.yaml`
+- `.gitops/server-application.yaml`
+
+In a GitOps flow, ArgoCD watches this repository/branch and reconciles cluster state to match these files. Each `Application` points ArgoCD at a target path/revision and destination cluster/namespace; drift in-cluster is corrected back to Git-declared state.
+
+Promotion typically follows an ordered git workflow: merge to `dev` first, validate, then promote the exact commit to `staging` (for example via PR branch promotion or a controlled `git diff`/cherry-pick process). This keeps environment changes auditable and reproducible, because promotions are Git history changes rather than imperative kubectl actions.
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
