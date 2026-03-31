@@ -8,6 +8,7 @@ function createFakeAppModel() {
   let store = [];
 
   const clone = (app) => ({ ...app });
+  const toObjectId = (value) => value.toString(16).padStart(24, '0');
 
   return {
     async find(_filter = {}, _projection, options = {}) {
@@ -26,9 +27,10 @@ function createFakeAppModel() {
     async create(payload) {
       counter += 1;
       const now = new Date();
+      const objectId = toObjectId(counter);
       const app = {
-        _id: counter.toString(),
-        id: counter.toString(),
+        _id: objectId,
+        id: objectId,
         name: payload.name,
         createdAt: payload.createdAt ?? now,
         updatedAt: payload.updatedAt ?? now,
@@ -92,8 +94,14 @@ describe('appsService', () => {
     assert.equal(remaining.length, 0);
   });
 
-  it('throws a not found error when deleting a missing app', async () => {
+  it('throws a validation error when deleting with an invalid app id', async () => {
     await assert.rejects(() => appsService.deleteApp('nonexistent-id'), {
+      message: 'Invalid app id.',
+    });
+  });
+
+  it('throws a not found error when deleting a missing app with a valid id', async () => {
+    await assert.rejects(() => appsService.deleteApp('507f1f77bcf86cd799439011'), {
       message: 'App not found.',
     });
   });
