@@ -35,6 +35,9 @@ jobs:
         env:
           COMPOSE_DOCKER_CLI_BUILD: 1
           DOCKER_BUILDKIT: 1
+          MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
+          POSTGRES_USER: fullstack
+          POSTGRES_PASSWORD: fullstack
         run: |
           docker compose up -d --build
 
@@ -43,6 +46,8 @@ jobs:
           SMOKE_RETRIES: 10
           SMOKE_RETRY_DELAY_MS: 2000
           SMOKE_TIMEOUT_MS: 5000
+          SMOKE_POSTGRES_URL: postgres://fullstack:fullstack@localhost:5432/fullstack-pilot
+          SMOKE_MSSQL_URL: mssql://sa:CiSmoke_Strong!Passw0rd1@localhost:1433
         run: npm run test:smoke
 
       - name: Dump service logs on failure
