@@ -7,8 +7,8 @@ const asyncHandler = (handler) => async (req, res, next) => {
   try {
     await handler(req, res, next);
   } catch (error) {
-    if (error instanceof AppServiceError && error.status) {
-      return res.status(error.status).json({ error: error.message });
+    if (error instanceof AppServiceError) {
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
 
     next(error);
