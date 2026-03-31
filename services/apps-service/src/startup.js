@@ -2,27 +2,49 @@ import mongoose from 'mongoose';
 import { createApp } from './app.js';
 import { logger } from './logger.js';
 
-export async function startServer({ port, mongodbUri, serviceName, serviceBasePath }) {
-  const app = createApp({ serviceName, serviceBasePath });
+export function sanitizeConnectionString(connectionString) {
+  if (typeof connectionString !== 'string') {
+    return connectionString;
+  }
 
   try {
-    await mongoose.connect(mongodbUri);
-    logger.info({ mongodbUri }, 'connected to MongoDB');
+    const parsed = new URL(connectionString);
+    if (!parsed.username && !parsed.password) {
+      return connectionString;
+    }
+
+    parsed.username = '***';
+    parsed.password = '***';
+    return parsed.toString();
+  } catch {
+    return connectionString.replace(/\/\/([^/@:]+):([^/@]+)@/, '//***:***@');
+  }
+}
+
+export async function startServer(
+  { port, mongodbUri, serviceName, serviceBasePath },
+  { mongooseConnect = mongoose.connect.bind(mongoose), appFactory = createApp, appLogger = logger, processRef = process } = {}
+) {
+  const app = appFactory({ serviceName, serviceBasePath });
+
+  try {
+    await mongooseConnect(mongodbUri);
+    appLogger.info({ mongodbUri: sanitizeConnectionString(mongodbUri) }, 'connected to MongoDB');
 
     app.listen(port, () => {
-      logger.info({ port, url: `http://localhost:${port}` }, 'server listening');
+      appLogger.info({ port, url: `http://localhost:${port}` }, 'server listening');
     });
   } catch (error) {
-    logger.error({ err: error }, 'failed to start server');
-    process.exit(1);
+    appLogger.error({ err: error }, 'failed to start server');
+    processRef.exit(1);
   }
 
   const shutdown = async () => {
-    logger.info('shutting down server');
+    appLogger.info('shutting down server');
     await mongoose.connection.close();
-    process.exit(0);
+    processRef.exit(0);
   };
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  processRef.on('SIGINT', shutdown);
+  processRef.on('SIGTERM', shutdown);
 }
