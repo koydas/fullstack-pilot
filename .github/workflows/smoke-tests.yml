@@ -52,10 +52,18 @@ jobs:
 
       - name: Dump service logs on failure
         if: failure()
+        env:
+          MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
+          POSTGRES_USER: fullstack
+          POSTGRES_PASSWORD: fullstack
         run: |
           docker compose ps
           docker compose logs
 
       - name: Tear down stack
         if: always()
+        env:
+          MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
+          POSTGRES_USER: fullstack
+          POSTGRES_PASSWORD: fullstack
         run: docker compose down --volumes
