@@ -24,7 +24,10 @@ describe('startup logging sanitization', () => {
     };
 
     const app = {
-      listen: (_port, callback) => callback(),
+      listen: (_port, callback) => {
+        callback();
+        return { close: (cb) => cb() };
+      },
     };
 
     await startServer(
@@ -48,5 +51,58 @@ describe('startup logging sanitization', () => {
     assert.equal(connectionLog[0].mongodbUri, 'mongodb://***:***@localhost:27017/fullstack-pilot?authSource=admin');
     assert.equal(connectionLog[0].mongodbUri.includes('dbUser'), false);
     assert.equal(connectionLog[0].mongodbUri.includes('dbPassword'), false);
+  });
+
+  it('gracefully shuts down HTTP server then MongoDB on SIGTERM', async () => {
+    const events = [];
+    const handlers = {};
+    const exits = [];
+
+    const processRef = {
+      on: (event, handler) => {
+        handlers[event] = handler;
+      },
+      exit: (code) => exits.push(code),
+    };
+
+    const app = {
+      listen: (_port, callback) => {
+        callback();
+        return {
+          close: (cb) => {
+            events.push('http-closed');
+            cb();
+          },
+        };
+      },
+    };
+
+    await startServer(
+      {
+        port: 4000,
+        mongodbUri: 'mongodb://localhost:27017/fullstack-pilot',
+        serviceName: 'apps',
+        serviceBasePath: '/',
+      },
+      {
+        mongooseConnect: async () => {},
+        mongooseConnection: {
+          close: async () => {
+            events.push('mongo-closed');
+          },
+        },
+        appFactory: () => app,
+        appLogger: { info: () => {}, error: () => {} },
+        processRef,
+        setTimeoutFn: () => 'timer-id',
+        clearTimeoutFn: () => {},
+      }
+    );
+
+    assert.ok(handlers.SIGTERM);
+    await handlers.SIGTERM();
+
+    assert.deepEqual(events, ['http-closed', 'mongo-closed']);
+    assert.deepEqual(exits, [0]);
   });
 });
