@@ -23,16 +23,28 @@
 - Node.js (18+ recommended)
 - Docker and Docker Compose
 
+## Configuration des secrets
+For Docker Compose runs, define local secrets in a root `.env` file (not committed).
+
+1. Copy the template: `cp .env.example .env`
+2. Set values explicitly:
+   - `MSSQL_SA_PASSWORD` (required, strong password for SQL Server)
+   - `POSTGRES_USER` and `POSTGRES_PASSWORD` (required by PostgreSQL and Flask service)
+3. Start the stack: `docker compose up --build`
+
+> `docker-compose.yml` intentionally fails fast when these variables are missing, to avoid weak/default credentials in clear text.
+
 ## Quick start
 ### Path 1: Docker Compose (everything in containers)
-1. `docker compose up --build`
-2. Browse the services:
+1. `cp .env.example .env` then set your local secrets.
+2. `docker compose up --build`
+3. Browse the services:
    - Client UI: http://localhost:5173
    - Node/Express API: http://localhost:4000/api
    - Flask API: http://localhost:5000/api
    - .NET API (+ Swagger): http://localhost:6060 (Swagger at `/swagger`)
    - Datastores: MongoDB 27017, PostgreSQL 5432, SQL Server 1433
-3. Stop with `docker compose down`.
+4. Stop with `docker compose down`.
 
 ### Path 2: Local (without docker-compose)
 1. Install dependencies: `npm run init` (installs all services and the client).
