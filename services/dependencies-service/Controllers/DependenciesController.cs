@@ -9,6 +9,8 @@ namespace DependenciesService.Controllers;
 public class DependenciesController : ControllerBase
 {
     private readonly IDependancyRepository _repository;
+    private const int DefaultLimit = 20;
+    private const int MaxLimit = 100;
 
     public DependenciesController(IDependancyRepository repository)
     {
@@ -17,9 +19,36 @@ public class DependenciesController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Dependancy>>> GetDependencies()
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> GetDependencies(
+        [FromQuery] int? limit,
+        [FromQuery] int? offset,
+        [FromQuery] bool legacy = false
+    )
     {
-        return Ok(await _repository.GetAllAsync());
+        var parsedLimit = limit ?? DefaultLimit;
+        var parsedOffset = offset ?? 0;
+
+        if (parsedLimit < 0 || parsedOffset < 0)
+        {
+            return BadRequest(new { error = "Query parameters 'limit' and 'offset' must be non-negative integers." });
+        }
+
+        parsedLimit = Math.Min(parsedLimit, MaxLimit);
+        var (items, total) = await _repository.GetAllAsync(parsedLimit, parsedOffset);
+
+        if (legacy)
+        {
+            return Ok(items);
+        }
+
+        return Ok(new
+        {
+            items,
+            total,
+            limit = parsedLimit,
+            offset = parsedOffset
+        });
     }
 
     [HttpGet("{id:guid}")]

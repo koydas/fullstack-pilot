@@ -26,15 +26,25 @@ function isValidObjectId(id) {
 
 export function createAppsService(appModel) {
   return {
-    listApps: () => listApps(appModel),
+    listApps: (pagination) => listApps(appModel, pagination),
     createApp: (payload) => createApp(payload, appModel),
     deleteApp: (id) => deleteApp(id, appModel),
   };
 }
 
-export async function listApps(appModel) {
+export async function listApps(appModel, { limit = 20, offset = 0 } = {}) {
   const App = resolveAppModel(appModel);
-  return App.find({}, null, { sort: { createdAt: -1 } });
+  const [items, total] = await Promise.all([
+    App.find({}, null, { sort: { createdAt: -1 }, limit, skip: offset }),
+    App.countDocuments({}),
+  ]);
+
+  return {
+    items,
+    total,
+    limit,
+    offset,
+  };
 }
 
 export async function createApp({ name }, appModel) {

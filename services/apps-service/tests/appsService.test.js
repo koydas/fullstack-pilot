@@ -13,6 +13,8 @@ function createFakeAppModel() {
   return {
     async find(_filter = {}, _projection, options = {}) {
       const sortDirection = options?.sort?.createdAt;
+      const limit = options?.limit;
+      const skip = options?.skip ?? 0;
       const sorted = [...store].sort((a, b) => {
         if (sortDirection === -1) {
           return b.createdAt - a.createdAt;
@@ -22,7 +24,12 @@ function createFakeAppModel() {
         }
         return 0;
       });
-      return sorted.map(clone);
+      const start = Math.max(skip, 0);
+      const end = Number.isFinite(limit) ? start + limit : undefined;
+      return sorted.slice(start, end).map(clone);
+    },
+    async countDocuments() {
+      return store.length;
     },
     async create(payload) {
       counter += 1;
@@ -73,10 +80,28 @@ describe('appsService', () => {
     await new Promise((resolve) => setTimeout(resolve, 5));
     const newest = await appsService.createApp({ name: 'Second' });
 
-    const apps = await appsService.listApps();
+    const result = await appsService.listApps();
+    const apps = result.items;
 
     assert.equal(apps[0].id, newest.id);
     assert.equal(apps.map((app) => app.name).join(','), 'Second,First');
+    assert.equal(result.total, 2);
+  });
+
+  it('supports pagination for apps listing', async () => {
+    await appsService.createApp({ name: 'First' });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await appsService.createApp({ name: 'Second' });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await appsService.createApp({ name: 'Third' });
+
+    const result = await appsService.listApps({ limit: 2, offset: 1 });
+
+    assert.equal(result.items.length, 2);
+    assert.equal(result.items.map((app) => app.name).join(','), 'Second,First');
+    assert.equal(result.total, 3);
+    assert.equal(result.limit, 2);
+    assert.equal(result.offset, 1);
   });
 
   it('rejects creation when the name is missing', async () => {
@@ -91,7 +116,7 @@ describe('appsService', () => {
     await appsService.deleteApp(app.id);
 
     const remaining = await appsService.listApps();
-    assert.equal(remaining.length, 0);
+    assert.equal(remaining.items.length, 0);
   });
 
   it('throws a validation error when deleting with an invalid app id', async () => {

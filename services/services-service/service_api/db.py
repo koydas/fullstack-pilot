@@ -39,14 +39,27 @@ class ServicesRepository:
                 )
                 connection.commit()
 
-    def list_services(self, app_id: str) -> List[Dict[str, str]]:
+    def list_services(self, app_id: str, limit: int, offset: int) -> Dict[str, object]:
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
-                    "SELECT id, name, description, app_id FROM services WHERE app_id = %s ORDER BY id ASC",
+                    "SELECT COUNT(*) AS total FROM services WHERE app_id = %s",
                     (app_id,),
                 )
-                return list(cursor.fetchall())
+                total_row = cursor.fetchone()
+                total = int(total_row["total"]) if total_row else 0
+                cursor.execute(
+                    """
+                    SELECT id, name, description, app_id
+                    FROM services
+                    WHERE app_id = %s
+                    ORDER BY id ASC
+                    LIMIT %s OFFSET %s
+                    """,
+                    (app_id, limit, offset),
+                )
+                items = list(cursor.fetchall())
+                return {"items": items, "total": total, "limit": limit, "offset": offset}
 
     def create_service(self, name: str, description: str, app_id: str) -> Dict[str, str]:
         with self.pool.connection() as connection:

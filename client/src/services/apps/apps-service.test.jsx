@@ -24,6 +24,16 @@ describe('apps-service', () => {
     expect(result).toEqual(apps);
   });
 
+  it('fetches apps from the paginated payload format', async () => {
+    const apps = [{ _id: '1', name: 'Demo' }];
+    apiMocks.get.mockResolvedValue({ data: { items: apps, total: 1, limit: 20, offset: 0 } });
+
+    const result = await fetchApps();
+
+    expect(apiMocks.get).toHaveBeenCalledWith('/apps');
+    expect(result).toEqual(apps);
+  });
+
   it('creates a new app with the provided name', async () => {
     const created = { _id: '2', name: 'New app' };
     apiMocks.post.mockResolvedValue({ data: created });
