@@ -43,6 +43,7 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
    - Node/Express API: http://localhost:4000/api
    - Flask API: http://localhost:5000/api
    - .NET API (+ Swagger): http://localhost:6060 (Swagger at `/swagger`)
+   - Agent API: http://localhost:7000
    - Datastores: MongoDB 27017, PostgreSQL 5432, SQL Server 1433
 4. Stop with `docker compose down`.
 
@@ -77,6 +78,12 @@ This repo intentionally splits responsibilities across independent services so e
   - **Why this choice:** .NET 8 demonstrates enterprise-oriented service implementation, and SQL Server reflects compatibility with common Microsoft-centric production environments.
   - **Data ownership boundary:** This service owns SQL Server-backed dependency data and encapsulates its contract through its API and Swagger surface.
   - **Trade-off:** Strong tooling and enterprise interoperability vs. a heavier runtime/toolchain footprint for local contributors.
+
+
+- **agent-service (Node/Express + Anthropic API, port 7000)**
+  - **Why this choice:** A small Node/Express agent keeps operational overhead low and can directly monitor the Node apps-service while providing AI-assisted developer tooling.
+  - **Data ownership boundary:** This service owns derived monitoring summaries and generated PR description payloads; it does not persist or mutate the source systems.
+  - **Trade-off:** Fast to integrate and extend vs. dependency on external LLM API availability and key management (`ANTHROPIC_API_KEY`).
 
 - **databases (MongoDB, PostgreSQL, SQL Server)**
   - **Why this choice:** Running all three datastores locally demonstrates polyglot persistence patterns and lets each service use the storage model that best matches its domain constraints.
@@ -122,6 +129,7 @@ Agent behavior, scope rules, exploration strategy, and execution workflow are go
 
 ### Useful examples
 - View logs for a service:
+  - `docker compose logs -f agent-service`
   - `docker compose logs -f apps-service`
   - `docker compose logs -f services-service`
   - `docker compose logs -f dependencies-service`

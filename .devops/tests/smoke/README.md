@@ -31,3 +31,6 @@ Optional tuning variables:
 - `SMOKE_RETRIES` (default: `10`) – retry attempts before failing
 - `SMOKE_RETRY_DELAY_MS` (default: `2000`) – wait time between retries
 - `SMOKE_TIMEOUT_MS` (default: `5000`) – per-request timeout in milliseconds
+
+- `SMOKE_AGENT_SERVICE_HEALTH_URL` (default: `http://localhost:7000/health-summary`)
+- `SMOKE_AGENT_SERVICE_PR_URL` (default: `http://localhost:7000/pr-description`)
