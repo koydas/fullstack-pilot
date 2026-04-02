@@ -95,3 +95,31 @@
 ### Docker
 - `docker compose up --build`
 - `docker compose down`
+
+---
+
+## GitHub Artifacts
+
+### Templates
+Before creating any issue or PR, read all templates in this repository:
+- `.github/ISSUE_TEMPLATE/` (all files)
+- `.github/PULL_REQUEST_TEMPLATE.md` (if present)
+
+For every issue or PR created via `gh`:
+- Identify the correct template based on the artifact type
+- Read the template fields before constructing the command
+- Fill every required field — never leave placeholders or skip sections
+- Use --template flag with the exact filename when applicable
+
+### Issue traceability
+Before starting any task that modifies code or infrastructure:
+1. Search for a related open issue: `gh issue list --search "<keywords>" --state open`
+2. If a relevant issue exists → reference it in commits and PRs
+3. If no relevant issue exists → create one before proceeding:
+   - Choose bug_report.yml or new_feature.yml based on task type
+   - Fill every required field
+   - Note the issue number and reference it in subsequent commits and PRs
+
+No code change without a traceable issue. No exceptions.
+
+---
