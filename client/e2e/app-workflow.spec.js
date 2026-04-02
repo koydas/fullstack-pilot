@@ -26,7 +26,12 @@ test.describe('app workflow', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify(apps),
+          body: JSON.stringify({
+            items: apps,
+            total: apps.length,
+            limit: 20,
+            offset: 0,
+          }),
         });
         return;
       }
