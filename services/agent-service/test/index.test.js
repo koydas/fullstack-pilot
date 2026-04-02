@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createApp } from '../src/index.js';
+import { createApp, generatePrDescription } from '../src/index.js';
 
 async function withServer(overrides, run) {
   const { app } = createApp({
@@ -94,6 +94,45 @@ test('POST /pr-description accepts valid token', async () => {
 
     assert.equal(response.status, 200);
     assert.equal(body.provider, 'fallback');
+    assert.equal(body.truncated, false);
+  });
+});
+
+test('POST /pr-description rejects empty diff', async () => {
+  await withServer({}, async (baseUrl) => {
+    const response = await postPr(baseUrl, { token: 'test-token', diff: '   ' });
+    const body = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.match(body.error, /diff/);
+  });
+});
+
+test('POST /pr-description returns 413 when diff is too large', async () => {
+  await withServer({ prDiffMaxChars: 10, prDiffOversizeMode: 'reject' }, async (baseUrl) => {
+    const response = await postPr(baseUrl, {
+      token: 'test-token',
+      diff: 'x'.repeat(11),
+    });
+    const body = await response.json();
+
+    assert.equal(response.status, 413);
+    assert.equal(body.error, 'payload_too_large');
+    assert.equal(body.maxChars, 10);
+  });
+});
+
+test('POST /pr-description truncates oversized diff when configured', async () => {
+  await withServer({ prDiffMaxChars: 10, prDiffOversizeMode: 'truncate' }, async (baseUrl) => {
+    const response = await postPr(baseUrl, {
+      token: 'test-token',
+      diff: 'x'.repeat(11),
+    });
+    const body = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(body.provider, 'fallback');
+    assert.equal(body.truncated, true);
   });
 });
 
@@ -137,4 +176,23 @@ test('POST /pr-description ignores spoofed X-Forwarded-For when trust proxy is d
     assert.equal(third.status, 429);
     assert.equal(thirdBody.error, 'rate_limit_exceeded');
   });
+});
+
+test('generatePrDescription reports Anthropic timeout explicitly', async () => {
+  process.env.ANTHROPIC_API_KEY = 'test-key';
+
+  const fetchImpl = (_url, { signal }) => new Promise((_resolve, reject) => {
+    signal.addEventListener('abort', () => {
+      const error = new Error('aborted');
+      error.name = 'AbortError';
+      reject(error);
+    });
+  });
+
+  await assert.rejects(
+    () => generatePrDescription('diff --git a/a b/a', { fetchImpl, anthropicTimeoutMs: 5 }),
+    /Anthropic request timed out after 5ms/,
+  );
+
+  delete process.env.ANTHROPIC_API_KEY;
 });

@@ -67,6 +67,11 @@ Rate limiting is evaluated before token validation, so failed auth attempts are 
 - `AGENT_SERVICE_RATE_LIMIT_IP_MAX` (optional, default `20`): max `POST /pr-description` requests per IP per window.
 - `AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX` (optional, default `100`): max `POST /pr-description` requests globally per window.
 - `AGENT_SERVICE_TRUST_PROXY` (optional, default `false`): set to `true` only behind a trusted reverse proxy so Express can derive client IP safely from proxy headers.
+- `PR_DIFF_MAX_CHARS` (optional, default `100000`): hard cap for `req.body.diff` length.
+- `PR_DIFF_OVERSIZE_MODE` (optional, default `reject`): handling for oversized diffs.
+  - `reject`: returns `413 Payload Too Large`.
+  - `truncate`: trims diff to `PR_DIFF_MAX_CHARS` and returns `truncated: true` in `POST /pr-description` response.
+- `ANTHROPIC_TIMEOUT_MS` (optional, default `10000`): network timeout for Anthropic API requests (AbortController).
 
 ### Curl examples
 ```bash

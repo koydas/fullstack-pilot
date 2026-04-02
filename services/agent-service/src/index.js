@@ -7,6 +7,14 @@ const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
 const DEFAULT_RATE_LIMIT_IP_MAX = 20;
 const DEFAULT_RATE_LIMIT_GLOBAL_MAX = 100;
 const DEFAULT_TRUST_PROXY = false;
+const DEFAULT_PR_DIFF_MAX_CHARS = 100000;
+const DEFAULT_PR_DIFF_OVERSIZE_MODE = 'reject';
+const DEFAULT_ANTHROPIC_TIMEOUT_MS = 10000;
+
+function readPositiveInt(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
 
 function readConfig(env = process.env) {
   return {
@@ -18,6 +26,9 @@ function readConfig(env = process.env) {
     rateLimitIpMax: Number(env.AGENT_SERVICE_RATE_LIMIT_IP_MAX || DEFAULT_RATE_LIMIT_IP_MAX),
     rateLimitGlobalMax: Number(env.AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX || DEFAULT_RATE_LIMIT_GLOBAL_MAX),
     trustProxy: String(env.AGENT_SERVICE_TRUST_PROXY || DEFAULT_TRUST_PROXY) === 'true',
+    prDiffMaxChars: readPositiveInt(env.PR_DIFF_MAX_CHARS, DEFAULT_PR_DIFF_MAX_CHARS),
+    prDiffOversizeMode: env.PR_DIFF_OVERSIZE_MODE === 'truncate' ? 'truncate' : DEFAULT_PR_DIFF_OVERSIZE_MODE,
+    anthropicTimeoutMs: readPositiveInt(env.ANTHROPIC_TIMEOUT_MS, DEFAULT_ANTHROPIC_TIMEOUT_MS),
   };
 }
 
@@ -146,8 +157,10 @@ function summarizeEvents(events) {
   };
 }
 
-async function generatePrDescription(diff) {
+export async function generatePrDescription(diff, options = {}) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  const fetchImpl = options.fetchImpl || fetch;
+  const anthropicTimeoutMs = readPositiveInt(options.anthropicTimeoutMs, DEFAULT_ANTHROPIC_TIMEOUT_MS);
   const fallback = {
     summary: 'Unable to generate AI summary because ANTHROPIC_API_KEY is missing.',
     impact: ['PR description fallback mode enabled.'],
@@ -166,20 +179,35 @@ async function generatePrDescription(diff) {
     diff,
   ].join('\n\n');
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
-      temperature: 0.1,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), anthropicTimeoutMs);
+
+  let response;
+  try {
+    response = await fetchImpl('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        temperature: 0.1,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+      signal: abortController.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`Anthropic request timed out after ${anthropicTimeoutMs}ms`);
+    }
+
+    throw new Error(`Anthropic request failed: ${error.message}`);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const body = await response.text();
@@ -285,12 +313,32 @@ export function createApp(options = {}) {
       return res.status(400).json({ error: 'Field "diff" (string) is required.' });
     }
 
+    let effectiveDiff = diff;
+    let truncated = false;
+
+    if (effectiveDiff.length > config.prDiffMaxChars) {
+      if (config.prDiffOversizeMode === 'truncate') {
+        effectiveDiff = effectiveDiff.slice(0, config.prDiffMaxChars);
+        truncated = true;
+      } else {
+        return res.status(413).json({
+          error: 'payload_too_large',
+          message: `Field "diff" exceeds maximum size of ${config.prDiffMaxChars} characters.`,
+          maxChars: config.prDiffMaxChars,
+        });
+      }
+    }
+
     try {
-      const result = await generatePrDescription(diff);
-      return res.json(result);
+      const result = await generatePrDescription(effectiveDiff, {
+        anthropicTimeoutMs: config.anthropicTimeoutMs,
+      });
+      return res.json({ ...result, truncated });
     } catch (error) {
+      const isTimeout = error.message.startsWith('Anthropic request timed out');
       return res.status(502).json({
-        error: 'Failed to generate PR description',
+        error: isTimeout ? 'upstream_timeout' : 'upstream_api_error',
+        message: isTimeout ? 'Anthropic request timed out.' : 'Failed to generate PR description.',
         details: error.message,
       });
     }
