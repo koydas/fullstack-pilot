@@ -65,6 +65,7 @@
 - Eliminate duplication only within task scope.
 - No speculative refactors or “while here” changes.
 - Prioritize readability and maintainability over clever implementations.
+- Keep all documentation content in English (especially `README.md`).
 
 ## Failure Handling
 - If requirements are unclear, apply the simplest valid solution and state assumptions explicitly.
