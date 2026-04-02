@@ -23,7 +23,7 @@
 - Node.js (18+ recommended)
 - Docker and Docker Compose
 
-## Configuration des secrets
+## Secret configuration
 For Docker Compose runs, define local secrets in a root `.env` file (not committed).
 
 1. Copy the template: `cp .env.example .env`
