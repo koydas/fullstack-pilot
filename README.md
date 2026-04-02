@@ -85,6 +85,11 @@ This repo intentionally splits responsibilities across independent services so e
 
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## AI-Native Development
+
+This repository is built and maintained using AI agents (OpenAI Codex).  
+Agent behavior, scope rules, exploration strategy, and execution workflow are governed by [`AGENTS.md`](./AGENTS.md).
+
 ## Architecture decisions
 - **Service isolation.** Each backend is independently runnable, testable, and containerized so teams can iterate or replace one service without tightly coupling release cadence to the others; this increases resilience of change but also introduces cross-service contract and orchestration overhead.
 
