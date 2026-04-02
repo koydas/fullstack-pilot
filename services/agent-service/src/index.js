@@ -6,6 +6,7 @@ const DEFAULT_LOG_POLL_INTERVAL_MS = 30000;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
 const DEFAULT_RATE_LIMIT_IP_MAX = 20;
 const DEFAULT_RATE_LIMIT_GLOBAL_MAX = 100;
+const DEFAULT_TRUST_PROXY = false;
 
 function readConfig(env = process.env) {
   return {
@@ -16,6 +17,7 @@ function readConfig(env = process.env) {
     rateLimitWindowMs: Number(env.AGENT_SERVICE_RATE_LIMIT_WINDOW_MS || DEFAULT_RATE_LIMIT_WINDOW_MS),
     rateLimitIpMax: Number(env.AGENT_SERVICE_RATE_LIMIT_IP_MAX || DEFAULT_RATE_LIMIT_IP_MAX),
     rateLimitGlobalMax: Number(env.AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX || DEFAULT_RATE_LIMIT_GLOBAL_MAX),
+    trustProxy: String(env.AGENT_SERVICE_TRUST_PROXY || DEFAULT_TRUST_PROXY) === 'true',
   };
 }
 
@@ -33,10 +35,6 @@ function buildRateLimiter({ rateLimitWindowMs, rateLimitIpMax, rateLimitGlobalMa
   }
 
   function resolveIp(req) {
-    const forwarded = req.headers['x-forwarded-for'];
-    if (typeof forwarded === 'string' && forwarded.trim()) {
-      return forwarded.split(',')[0].trim();
-    }
     return req.ip || req.socket?.remoteAddress || 'unknown';
   }
 
@@ -265,11 +263,12 @@ export function createApp(options = {}) {
   const app = express();
   const healthState = createHealthState(config.appsServiceBaseUrl);
 
+  app.set('trust proxy', config.trustProxy);
   app.use(express.json({ limit: '1mb' }));
 
   const protectedMiddlewares = [
-    requireAgentToken(config.agentServiceToken),
     buildRateLimiter(config),
+    requireAgentToken(config.agentServiceToken),
   ];
 
   app.get('/health-summary', (_req, res) => {

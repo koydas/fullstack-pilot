@@ -58,12 +58,14 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
 
 ## Agent service endpoint protection and throttling
 `services/agent-service` now protects `POST /pr-description` with an internal token and in-memory rate limiting.
+Rate limiting is evaluated before token validation, so failed auth attempts are also throttled.
 
 ### Environment variables
 - `AGENT_SERVICE_TOKEN` (required): expected value for `X-Agent-Token` on `POST /pr-description`.
 - `AGENT_SERVICE_RATE_LIMIT_WINDOW_MS` (optional, default `60000`): rolling window length in milliseconds.
 - `AGENT_SERVICE_RATE_LIMIT_IP_MAX` (optional, default `20`): max `POST /pr-description` requests per IP per window.
 - `AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX` (optional, default `100`): max `POST /pr-description` requests globally per window.
+- `AGENT_SERVICE_TRUST_PROXY` (optional, default `false`): set to `true` only behind a trusted reverse proxy so Express can derive client IP safely from proxy headers.
 
 ### Curl examples
 ```bash
