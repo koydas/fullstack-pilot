@@ -1,26 +1,91 @@
 import express from 'express';
 
-const port = Number(process.env.PORT || 7000);
-const appsServiceBaseUrl = process.env.APPS_SERVICE_BASE_URL || 'http://apps-service:4000';
-const pollIntervalMs = Number(process.env.LOG_POLL_INTERVAL_MS || 30000);
+const DEFAULT_PORT = 7000;
+const DEFAULT_APPS_SERVICE_BASE_URL = 'http://apps-service:4000';
+const DEFAULT_LOG_POLL_INTERVAL_MS = 30000;
+const DEFAULT_RATE_LIMIT_WINDOW_MS = 60000;
+const DEFAULT_RATE_LIMIT_IP_MAX = 20;
+const DEFAULT_RATE_LIMIT_GLOBAL_MAX = 100;
+const DEFAULT_TRUST_PROXY = false;
 
-const app = express();
-app.use(express.json({ limit: '1mb' }));
+function readConfig(env = process.env) {
+  return {
+    port: Number(env.PORT || DEFAULT_PORT),
+    appsServiceBaseUrl: env.APPS_SERVICE_BASE_URL || DEFAULT_APPS_SERVICE_BASE_URL,
+    pollIntervalMs: Number(env.LOG_POLL_INTERVAL_MS || DEFAULT_LOG_POLL_INTERVAL_MS),
+    agentServiceToken: env.AGENT_SERVICE_TOKEN || '',
+    rateLimitWindowMs: Number(env.AGENT_SERVICE_RATE_LIMIT_WINDOW_MS || DEFAULT_RATE_LIMIT_WINDOW_MS),
+    rateLimitIpMax: Number(env.AGENT_SERVICE_RATE_LIMIT_IP_MAX || DEFAULT_RATE_LIMIT_IP_MAX),
+    rateLimitGlobalMax: Number(env.AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX || DEFAULT_RATE_LIMIT_GLOBAL_MAX),
+    trustProxy: String(env.AGENT_SERVICE_TRUST_PROXY || DEFAULT_TRUST_PROXY) === 'true',
+  };
+}
 
-const healthState = {
-  lastUpdated: null,
-  sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
-  totalEvents: 0,
-  anomalies: [],
-  errorPatterns: {},
-  requestTrends: {
-    totalRequests: 0,
-    errorRate: 0,
-    topPaths: [],
-    topMethods: [],
-    avgDurationMs: 0,
-  },
-};
+function buildRateLimiter({ rateLimitWindowMs, rateLimitIpMax, rateLimitGlobalMax }) {
+  let globalWindowStart = Date.now();
+  let globalCount = 0;
+  const ipCounters = new Map();
+
+  function resetWindow(now) {
+    if (now - globalWindowStart >= rateLimitWindowMs) {
+      globalWindowStart = now;
+      globalCount = 0;
+      ipCounters.clear();
+    }
+  }
+
+  function resolveIp(req) {
+    return req.ip || req.socket?.remoteAddress || 'unknown';
+  }
+
+  return function rateLimitMiddleware(req, res, next) {
+    const now = Date.now();
+    resetWindow(now);
+
+    const ip = resolveIp(req);
+    const ipCount = (ipCounters.get(ip) || 0) + 1;
+    const nextGlobalCount = globalCount + 1;
+
+    if (ipCount > rateLimitIpMax) {
+      return res.status(429).json({
+        error: 'rate_limit_exceeded',
+        message: 'Too many requests for this IP. Please retry later.',
+      });
+    }
+
+    if (nextGlobalCount > rateLimitGlobalMax) {
+      return res.status(429).json({
+        error: 'rate_limit_exceeded',
+        message: 'Too many requests globally. Please retry later.',
+      });
+    }
+
+    ipCounters.set(ip, ipCount);
+    globalCount = nextGlobalCount;
+    return next();
+  };
+}
+
+function requireAgentToken(agentServiceToken) {
+  return function authMiddleware(req, res, next) {
+    if (!agentServiceToken) {
+      return res.status(500).json({
+        error: 'configuration_error',
+        message: 'AGENT_SERVICE_TOKEN is not configured.',
+      });
+    }
+
+    const provided = req.get('X-Agent-Token');
+    if (provided !== agentServiceToken) {
+      return res.status(401).json({
+        error: 'unauthorized',
+        message: 'Missing or invalid X-Agent-Token header.',
+      });
+    }
+
+    return next();
+  };
+}
 
 function countTop(entries, key, limit = 5) {
   const counter = new Map();
@@ -79,33 +144,6 @@ function summarizeEvents(events) {
       avgDurationMs,
     },
   };
-}
-
-async function pollLogs() {
-  try {
-    const response = await fetch(`${appsServiceBaseUrl}/internal/logs/recent?limit=250`);
-    if (!response.ok) {
-      throw new Error(`apps-service responded ${response.status}`);
-    }
-
-    const payload = await response.json();
-    const events = Array.isArray(payload?.events) ? payload.events : [];
-    const summary = summarizeEvents(events);
-
-    Object.assign(healthState, summary, {
-      sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
-      lastUpdated: new Date().toISOString(),
-    });
-  } catch (error) {
-    healthState.lastUpdated = new Date().toISOString();
-    healthState.anomalies = [
-      {
-        type: 'monitoring_fetch_failure',
-        severity: 'high',
-        message: `Failed to fetch logs from apps-service: ${error.message}`,
-      },
-    ];
-  }
 }
 
 async function generatePrDescription(diff) {
@@ -176,34 +214,108 @@ async function generatePrDescription(diff) {
   };
 }
 
-app.get('/health-summary', (_req, res) => {
-  res.json({
-    status: 'ok',
-    generatedAt: new Date().toISOString(),
-    summary: healthState,
-  });
-});
+function createHealthState(appsServiceBaseUrl) {
+  return {
+    lastUpdated: null,
+    sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
+    totalEvents: 0,
+    anomalies: [],
+    errorPatterns: {},
+    requestTrends: {
+      totalRequests: 0,
+      errorRate: 0,
+      topPaths: [],
+      topMethods: [],
+      avgDurationMs: 0,
+    },
+  };
+}
 
-app.post('/pr-description', async (req, res) => {
-  const diff = req.body?.diff;
-  if (typeof diff !== 'string' || !diff.trim()) {
-    return res.status(400).json({ error: 'Field "diff" (string) is required.' });
-  }
-
+async function pollLogs(healthState, appsServiceBaseUrl) {
   try {
-    const result = await generatePrDescription(diff);
-    return res.json(result);
-  } catch (error) {
-    return res.status(502).json({
-      error: 'Failed to generate PR description',
-      details: error.message,
+    const response = await fetch(`${appsServiceBaseUrl}/internal/logs/recent?limit=250`);
+    if (!response.ok) {
+      throw new Error(`apps-service responded ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const events = Array.isArray(payload?.events) ? payload.events : [];
+    const summary = summarizeEvents(events);
+
+    Object.assign(healthState, summary, {
+      sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
+      lastUpdated: new Date().toISOString(),
     });
+  } catch (error) {
+    healthState.lastUpdated = new Date().toISOString();
+    healthState.anomalies = [
+      {
+        type: 'monitoring_fetch_failure',
+        severity: 'high',
+        message: `Failed to fetch logs from apps-service: ${error.message}`,
+      },
+    ];
   }
-});
+}
 
-pollLogs();
-setInterval(pollLogs, pollIntervalMs);
+export function createApp(options = {}) {
+  const config = { ...readConfig(), ...options };
+  const app = express();
+  const healthState = createHealthState(config.appsServiceBaseUrl);
 
-app.listen(port, () => {
-  console.log(`agent-service listening on http://localhost:${port}`);
-});
+  app.set('trust proxy', config.trustProxy);
+  app.use(express.json({ limit: '1mb' }));
+
+  const protectedMiddlewares = [
+    buildRateLimiter(config),
+    requireAgentToken(config.agentServiceToken),
+  ];
+
+  app.get('/health-summary', (_req, res) => {
+    res.json({
+      status: 'ok',
+      generatedAt: new Date().toISOString(),
+      summary: healthState,
+    });
+  });
+
+  app.post('/pr-description', ...protectedMiddlewares, async (req, res) => {
+    const diff = req.body?.diff;
+    if (typeof diff !== 'string' || !diff.trim()) {
+      return res.status(400).json({ error: 'Field "diff" (string) is required.' });
+    }
+
+    try {
+      const result = await generatePrDescription(diff);
+      return res.json(result);
+    } catch (error) {
+      return res.status(502).json({
+        error: 'Failed to generate PR description',
+        details: error.message,
+      });
+    }
+  });
+
+  return {
+    app,
+    poll: () => pollLogs(healthState, config.appsServiceBaseUrl),
+    pollIntervalMs: config.pollIntervalMs,
+    port: config.port,
+  };
+}
+
+export function startServer(options = {}) {
+  const serverContext = createApp(options);
+  serverContext.poll();
+  const intervalId = setInterval(serverContext.poll, serverContext.pollIntervalMs);
+
+  const server = serverContext.app.listen(serverContext.port, () => {
+    console.log(`agent-service listening on http://localhost:${serverContext.port}`);
+  });
+
+  return { server, intervalId };
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  startServer();
+}

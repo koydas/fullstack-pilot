@@ -30,6 +30,7 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
 2. Set values explicitly:
    - `MSSQL_SA_PASSWORD` (required, strong password for SQL Server)
    - `POSTGRES_USER` and `POSTGRES_PASSWORD` (required by PostgreSQL and Flask service)
+   - `AGENT_SERVICE_TOKEN` (recommended; defaults to `dev-agent-token` if unset in local compose)
 3. Start the stack: `docker compose up --build`
 
 > `docker-compose.yml` intentionally fails fast when these variables are missing, to avoid weak/default credentials in clear text.
@@ -55,6 +56,34 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
 5. Optional extras (run with their own prerequisites):
    - Flask service: `npm run start:services-service` (port 5000, needs PostgreSQL at `postgres://fullstack:fullstack@localhost:5432/fullstack-pilot`).
    - .NET service: `npm run start:dependencies-service` (port 6060, needs SQL Server credentials from `MSSQL_SA_PASSWORD`).
+
+## Agent service endpoint protection and throttling
+`services/agent-service` now protects `POST /pr-description` with an internal token and in-memory rate limiting.
+Rate limiting is evaluated before token validation, so failed auth attempts are also throttled.
+
+### Environment variables
+- `AGENT_SERVICE_TOKEN` (required): expected value for `X-Agent-Token` on `POST /pr-description`.
+- `AGENT_SERVICE_RATE_LIMIT_WINDOW_MS` (optional, default `60000`): rolling window length in milliseconds.
+- `AGENT_SERVICE_RATE_LIMIT_IP_MAX` (optional, default `20`): max `POST /pr-description` requests per IP per window.
+- `AGENT_SERVICE_RATE_LIMIT_GLOBAL_MAX` (optional, default `100`): max `POST /pr-description` requests globally per window.
+- `AGENT_SERVICE_TRUST_PROXY` (optional, default `false`): set to `true` only behind a trusted reverse proxy so Express can derive client IP safely from proxy headers.
+
+### Curl examples
+```bash
+# Public monitoring endpoint (unchanged)
+curl -s http://localhost:7000/health-summary
+
+# Protected endpoint with token
+curl -s -X POST http://localhost:7000/pr-description \
+  -H "Content-Type: application/json" \
+  -H "X-Agent-Token: ${AGENT_SERVICE_TOKEN}" \
+  -d '{"diff":"diff --git a/file b/file"}'
+
+# Unauthorized response example (401)
+curl -s -X POST http://localhost:7000/pr-description \
+  -H "Content-Type: application/json" \
+  -d '{"diff":"diff --git a/file b/file"}'
+```
 
 ## Architecture overview
 This repo intentionally splits responsibilities across independent services so each boundary demonstrates a practical technology choice and the data ownership model behind it, rather than a single “best stack” answer.
