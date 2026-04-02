@@ -10,7 +10,7 @@
 [![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
 [![Playwright E2E](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml)
 ---
-## What this repo demonstrates (Hiring manager view)
+## What this repo demonstrates
 - Polyglot stack standing up quickly: React/Vite UI, Node/Express API on MongoDB, plus optional Flask (Postgres) and .NET (SQL Server) services.
 - Practical operational story: Docker Compose definitions, per-service Dockerfiles, and smoke-test scripts for each backend.
 - Review-ready defaults: lintable frontend, environment-based config, and repeatable init scripts for dependencies.
