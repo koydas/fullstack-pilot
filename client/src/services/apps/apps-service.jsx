@@ -6,7 +6,7 @@ const api = axios.create({
 
 export async function fetchApps() {
   const { data } = await api.get('/apps');
-  return data;
+  return data?.items ?? [];
 }
 
 export async function createApp(name) {

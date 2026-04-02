@@ -21,7 +21,7 @@ The service expects a `DependenciesDb` connection string. When running locally w
 `docker-compose.yml` includes an `mssql` service that exposes SQL Server on port `1433`. Bring the stack up with Docker Compose to start both the database and the API together.
 
 ## Endpoints
-- `GET /api/dependencies` – list all dependencies
+- `GET /api/dependencies` – list dependencies (supports `limit`, `offset`)
 - `GET /api/dependencies/{id}` – get a dependancy by id
 - `POST /api/dependencies` – create a dependancy `{ "name": "Name", "description": "Optional" }`
 - `PUT /api/dependencies/{id}` – update an existing dependancy
@@ -45,6 +45,23 @@ curl -X PUT http://localhost:5000/api/dependencies/<ID> \
 Delete a dependancy:
 ```bash
 curl -X DELETE http://localhost:5000/api/dependencies/<ID>
+```
+
+Paginated list example:
+
+```bash
+curl "http://localhost:5000/api/dependencies?limit=10&offset=0"
+```
+
+Response format:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "limit": 10,
+  "offset": 0
+}
 ```
 
 ## Monitoring

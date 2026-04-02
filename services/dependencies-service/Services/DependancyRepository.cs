@@ -6,7 +6,7 @@ namespace DependenciesService.Services;
 
 public interface IDependancyRepository
 {
-    Task<IEnumerable<Dependancy>> GetAllAsync();
+    Task<(IEnumerable<Dependancy> Items, int Total)> GetAllAsync(int limit, int offset);
     Task<Dependancy?> GetAsync(Guid id);
     Task<Dependancy> CreateAsync(Dependancy dependancy);
     Task<Dependancy?> UpdateAsync(Guid id, Dependancy updated);
@@ -22,8 +22,18 @@ public class DependancyRepository : IDependancyRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Dependancy>> GetAllAsync() =>
-        await _context.Dependencies.AsNoTracking().OrderBy(p => p.CreatedAt).ToListAsync();
+    public async Task<(IEnumerable<Dependancy> Items, int Total)> GetAllAsync(int limit, int offset)
+    {
+        var total = await _context.Dependencies.CountAsync();
+        var items = await _context.Dependencies
+            .AsNoTracking()
+            .OrderBy(p => p.CreatedAt)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync();
+
+        return (items, total);
+    }
 
     public async Task<Dependancy?> GetAsync(Guid id) =>
         await _context.Dependencies.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);

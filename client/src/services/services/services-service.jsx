@@ -6,7 +6,7 @@ const api = axios.create({
 
 export async function fetchServices(appId) {
   const { data } = await api.get('/services', { params: { appId } });
-  return data;
+  return data?.items ?? [];
 }
 
 export async function createService(payload, appId) {

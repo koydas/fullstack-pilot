@@ -25,7 +25,7 @@ const services = [
       runHttpTest(
         process.env.SMOKE_APPS_SERVICE_URL || 'http://localhost:4000/api/apps',
         (response) =>
-          expectJsonArray(response, {
+          expectListPayload(response, {
             context: 'apps collection',
           }),
       ),
@@ -35,7 +35,7 @@ const services = [
     run: () =>
       runHttpTest(
         process.env.SMOKE_SERVICES_SERVICE_URL || 'http://localhost:5000/api/services',
-        (response) => expectJsonArray(response, { context: 'services registry' }),
+        (response) => expectListPayload(response, { context: 'services registry' }),
       ),
   },
   {
@@ -44,7 +44,7 @@ const services = [
       runHttpTest(
         process.env.SMOKE_DEPENDENCIES_SERVICE_URL || 'http://localhost:6060/api/dependencies',
         (response) =>
-          expectJsonArray(response, {
+          expectListPayload(response, {
             context: 'dependencies catalogue',
             minLength: 1,
           }),
@@ -223,7 +223,7 @@ function isContainerPresent(name) {
   }
 }
 
-async function expectJsonArray(response, { context, minLength }) {
+async function expectListPayload(response, { context, minLength }) {
   assert.ok(response, `No response received for ${context}`);
   assert.ok(
     response.ok,
@@ -237,16 +237,29 @@ async function expectJsonArray(response, { context, minLength }) {
     throw new Error(`${context} did not return JSON: ${error.message}`);
   }
 
-  assert.ok(Array.isArray(payload), `${context} did not return a JSON array`);
+  const isPaginatedPayload =
+    payload &&
+    typeof payload === 'object' &&
+    Array.isArray(payload.items) &&
+    typeof payload.total === 'number' &&
+    typeof payload.limit === 'number' &&
+    typeof payload.offset === 'number';
+
+  assert.ok(
+    isPaginatedPayload,
+    `${context} did not return a paginated payload { items, total, limit, offset }`,
+  );
+
+  const items = payload.items;
 
   if (typeof minLength === 'number') {
     assert.ok(
-      payload.length >= minLength,
+      items.length >= minLength,
       `${context} should contain at least ${minLength} entr${minLength === 1 ? 'y' : 'ies'}`,
     );
   }
 
-  return payload;
+  return items;
 }
 
 async function runTest({ name, run, setup }) {

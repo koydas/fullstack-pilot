@@ -10,6 +10,8 @@ def parse_payload(raw_payload: Any) -> Dict[str, Any]:
 
 
 DEFAULT_APP_ID = "default-app"
+DEFAULT_LIMIT = 20
+MAX_LIMIT = 100
 
 
 def _normalize_app_id(raw_value: Any, *, required: bool = False) -> str:
@@ -41,6 +43,26 @@ def validate_new_service(payload: Dict[str, Any]) -> Tuple[str, str, str]:
 
 def validate_app_id_query_param(raw_value: Any) -> str:
     return _normalize_app_id(raw_value)
+
+
+def parse_pagination_params(raw_limit: Any, raw_offset: Any) -> Tuple[int, int]:
+    limit = _parse_non_negative_int(raw_limit, "limit", DEFAULT_LIMIT)
+    offset = _parse_non_negative_int(raw_offset, "offset", 0)
+    return min(limit, MAX_LIMIT), offset
+
+
+def _parse_non_negative_int(raw_value: Any, field_name: str, default: int) -> int:
+    if raw_value is None or raw_value == "":
+        return default
+
+    try:
+        parsed = int(raw_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Query parameter '{field_name}' must be a non-negative integer") from exc
+
+    if parsed < 0:
+        raise ValueError(f"Query parameter '{field_name}' must be a non-negative integer")
+    return parsed
 
 
 def validate_updates(payload: Dict[str, Any]) -> Dict[str, str]:

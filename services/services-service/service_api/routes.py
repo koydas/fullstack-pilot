@@ -4,6 +4,7 @@ from flask import Blueprint, abort, current_app, jsonify, request, url_for
 
 from .db import ServicesRepository
 from .validation import (
+    parse_pagination_params,
     parse_payload,
     validate_app_id_query_param,
     validate_new_service,
@@ -28,11 +29,14 @@ def _ensure_service_or_404(service_id: int, app_id: str):
 def list_services():
     try:
         app_id = validate_app_id_query_param(request.args.get("appId"))
+        limit, offset = parse_pagination_params(
+            request.args.get("limit"), request.args.get("offset")
+        )
     except ValueError as exc:
         abort(400, description=str(exc))
 
-    services = _repository().list_services(app_id)
-    return jsonify(services)
+    payload = _repository().list_services(app_id, limit, offset)
+    return jsonify(payload)
 
 
 @services_bp.post("")

@@ -36,7 +36,7 @@ The service will listen on `http://localhost:5000` by default. To use a differen
 ## API
 All endpoints are prefixed with `/api`.
 
-- `GET /api/services` — list all services
+- `GET /api/services` — list services (supports `appId`, `limit`, `offset`)
 - `POST /api/services` — create a service. JSON body: `{ "name": "Example", "description": "Optional details" }`
 - `GET /api/services/<id>` — fetch a single service
 - `PUT /api/services/<id>` — update name and/or description
@@ -48,4 +48,21 @@ Example request to create a service:
 curl -X POST http://localhost:5000/api/services \
   -H "Content-Type: application/json" \
   -d '{"name": "Write docs", "description": "First draft"}'
+```
+
+Example paginated request:
+
+```bash
+curl "http://localhost:5000/api/services?appId=default-app&limit=10&offset=0"
+```
+
+Response format:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "limit": 10,
+  "offset": 0
+}
 ```

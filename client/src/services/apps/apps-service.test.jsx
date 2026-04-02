@@ -14,9 +14,9 @@ describe('apps-service', () => {
     vi.clearAllMocks();
   });
 
-  it('fetches apps from the API', async () => {
+  it('fetches apps from the paginated payload', async () => {
     const apps = [{ _id: '1', name: 'Demo' }];
-    apiMocks.get.mockResolvedValue({ data: apps });
+    apiMocks.get.mockResolvedValue({ data: { items: apps, total: 1, limit: 20, offset: 0 } });
 
     const result = await fetchApps();
 

@@ -143,6 +143,32 @@ Promotion typically follows an ordered git workflow: merge to `dev` first, valid
 ## Observability
 Health endpoints are exposed by both backend APIs to support lightweight runtime checks in local development and container orchestration.
 
+## Pagination for listing endpoints
+The listing endpoints support `limit` and `offset` query parameters with defaults (`limit=20`, `offset=0`) and a max `limit` of `100`.
+
+- Node apps-service: `GET /api/apps`
+- Flask services-service: `GET /api/services`
+- .NET dependencies-service: `GET /api/dependencies`
+
+Example calls:
+
+```bash
+curl "http://localhost:4000/api/apps?limit=10&offset=0"
+curl "http://localhost:5000/api/services?appId=default-app&limit=10&offset=0"
+curl "http://localhost:6060/api/dependencies?limit=10&offset=0"
+```
+
+Default response shape:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "limit": 10,
+  "offset": 0
+}
+```
+
 ### apps-service health check (Node/Express)
 - **Endpoint:** `GET http://localhost:4000/healthz`
 - **Response shape:** JSON object with `{ status, uptime, timestamp }`
