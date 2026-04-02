@@ -7,15 +7,19 @@ export function monitoringMiddleware(req, res, next) {
   res.on('finish', () => {
     const durationMs = Number(process.hrtime.bigint() - startTime) / 1e6;
 
+    const sanitizedPath = req.path;
     const event = {
       timestamp: new Date().toISOString(),
       method: req.method,
-      path: req.originalUrl,
+      path: sanitizedPath,
       statusCode: res.statusCode,
       durationMs: Number(durationMs.toFixed(2)),
     };
 
-    addRequestEvent(event);
+    if (sanitizedPath !== '/internal/logs/recent') {
+      addRequestEvent(event);
+    }
+
     logger.info(event, 'request completed');
   });
 
