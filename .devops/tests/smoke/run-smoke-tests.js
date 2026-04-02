@@ -7,6 +7,8 @@ import { createMssqlUtils } from './mssql/index.js';
 const retries = Number(process.env.SMOKE_RETRIES || 10);
 const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 2000);
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
+const smokeAgentServiceToken =
+  process.env.SMOKE_AGENT_SERVICE_TOKEN || process.env.AGENT_SERVICE_TOKEN || 'dev-agent-token';
 const { runMssqlCheck, ensureMssqlHelper } = createMssqlUtils({
   timeoutMs,
   isDockerAvailable,
@@ -69,7 +71,10 @@ const services = [
           body: JSON.stringify({
             diff: 'diff --git a/README.md b/README.md\n+Add agent service section',
           }),
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Agent-Token': smokeAgentServiceToken,
+          },
         },
       ),
   },

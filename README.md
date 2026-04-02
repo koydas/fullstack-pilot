@@ -30,6 +30,7 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
 2. Set values explicitly:
    - `MSSQL_SA_PASSWORD` (required, strong password for SQL Server)
    - `POSTGRES_USER` and `POSTGRES_PASSWORD` (required by PostgreSQL and Flask service)
+   - `AGENT_SERVICE_TOKEN` (recommended; defaults to `dev-agent-token` if unset in local compose)
 3. Start the stack: `docker compose up --build`
 
 > `docker-compose.yml` intentionally fails fast when these variables are missing, to avoid weak/default credentials in clear text.
