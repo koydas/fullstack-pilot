@@ -51,6 +51,29 @@ const services = [
       ),
   },
   {
+    name: 'agent-service health-summary',
+    run: () =>
+      runHttpTest(
+        process.env.SMOKE_AGENT_SERVICE_HEALTH_URL || 'http://localhost:7000/health-summary',
+        (response) => expectAgentHealthSummary(response),
+      ),
+  },
+  {
+    name: 'agent-service pr-description',
+    run: () =>
+      runHttpTest(
+        process.env.SMOKE_AGENT_SERVICE_PR_URL || 'http://localhost:7000/pr-description',
+        (response) => expectPrDescription(response),
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            diff: 'diff --git a/README.md b/README.md\n+Add agent service section',
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+  },
+  {
     name: 'postgres',
     setup: () => ensurePostgresHelper(process.env.SMOKE_POSTGRES_URL),
     run: () =>
@@ -65,17 +88,17 @@ const services = [
   },
 ];
 
-async function runHttpTest(url, validate) {
-  const response = await fetchWithTimeout(url);
+async function runHttpTest(url, validate, options) {
+  const response = await fetchWithTimeout(url, options);
   await validate(response);
 }
 
-async function fetchWithTimeout(url) {
+async function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { ...options, signal: controller.signal });
   } catch (error) {
     if (error.name === 'AbortError') {
       throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
@@ -247,6 +270,26 @@ async function expectJsonArray(response, { context, minLength }) {
   }
 
   return payload;
+}
+
+
+async function expectAgentHealthSummary(response) {
+  assert.ok(response.ok, `agent health summary responded with status ${response.status}`);
+  const payload = await response.json();
+
+  assert.equal(payload.status, 'ok', 'agent health summary should return status "ok"');
+  assert.ok(payload.summary, 'agent health summary should include summary object');
+  assert.ok(Array.isArray(payload.summary.anomalies), 'agent health summary should include anomalies');
+}
+
+async function expectPrDescription(response) {
+  assert.ok(response.ok, `agent pr-description responded with status ${response.status}`);
+  const payload = await response.json();
+
+  assert.ok(payload.description, 'agent pr-description should include description');
+  assert.equal(typeof payload.description.summary, 'string', 'summary must be string');
+  assert.ok(Array.isArray(payload.description.impact), 'impact must be an array');
+  assert.ok(Array.isArray(payload.description.risks), 'risks must be an array');
 }
 
 async function runTest({ name, run, setup }) {

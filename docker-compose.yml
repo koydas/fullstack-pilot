@@ -71,6 +71,19 @@ services:
     ports:
       - "6060:6060"
 
+
+  agent-service:
+    build: ./services/agent-service
+    container_name: fullstack-pilot-agent-service
+    environment:
+      PORT: 7000
+      APPS_SERVICE_BASE_URL: http://apps-service:4000
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - apps-service
+    ports:
+      - "7000:7000"
+
   client:
     build: ./client
     container_name: fullstack-pilot-client

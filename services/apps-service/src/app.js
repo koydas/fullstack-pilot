@@ -3,6 +3,7 @@ import cors from 'cors';
 import { monitoringMiddleware } from './middleware/monitoring.js';
 import { getActiveServices } from './servicesResolver.js';
 import { logger } from './logger.js';
+import { getRecentRequestEvents } from './logStore.js';
 
 export function createApp({ serviceName, serviceBasePath }) {
   const app = express();
@@ -16,6 +17,17 @@ export function createApp({ serviceName, serviceBasePath }) {
       status: 'ok',
       uptime: Number(process.uptime().toFixed(3)),
       timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get('/internal/logs/recent', (req, res) => {
+    const limit = Number(req.query.limit || 100);
+    const events = getRecentRequestEvents(limit);
+
+    res.json({
+      status: 'ok',
+      count: events.length,
+      events,
     });
   });
 
