@@ -2,9 +2,8 @@
 
 Quick checks to verify each service responds on its expected port. The tests expect the services to be running locally (for example via `docker compose up`) and rely on the default ports defined in `docker-compose.yml`.
 
-For listing APIs, the smoke check now accepts both response formats:
-- legacy array format (`[]`)
-- paginated object format (`{ items, total, limit, offset }`)
+For listing APIs, the smoke check validates the paginated response format:
+- `{ items, total, limit, offset }`
 
 ## Running
 

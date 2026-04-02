@@ -6,9 +6,6 @@ const api = axios.create({
 
 export async function fetchApps() {
   const { data } = await api.get('/apps');
-  if (Array.isArray(data)) {
-    return data;
-  }
   return data?.items ?? [];
 }
 

@@ -14,17 +14,7 @@ describe('apps-service', () => {
     vi.clearAllMocks();
   });
 
-  it('fetches apps from the API', async () => {
-    const apps = [{ _id: '1', name: 'Demo' }];
-    apiMocks.get.mockResolvedValue({ data: apps });
-
-    const result = await fetchApps();
-
-    expect(apiMocks.get).toHaveBeenCalledWith('/apps');
-    expect(result).toEqual(apps);
-  });
-
-  it('fetches apps from the paginated payload format', async () => {
+  it('fetches apps from the paginated payload', async () => {
     const apps = [{ _id: '1', name: 'Demo' }];
     apiMocks.get.mockResolvedValue({ data: { items: apps, total: 1, limit: 20, offset: 0 } });
 

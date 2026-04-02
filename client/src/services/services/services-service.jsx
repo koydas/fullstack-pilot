@@ -6,9 +6,6 @@ const api = axios.create({
 
 export async function fetchServices(appId) {
   const { data } = await api.get('/services', { params: { appId } });
-  if (Array.isArray(data)) {
-    return data;
-  }
   return data?.items ?? [];
 }
 

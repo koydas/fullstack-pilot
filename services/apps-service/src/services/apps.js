@@ -41,8 +41,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const pagination = parsePaginationQuery(req.query);
     const payload = await listApps(undefined, pagination);
-    const useLegacyResponse = req.query.legacy === 'true';
-    res.json(useLegacyResponse ? payload.items : payload);
+    res.json(payload);
   })
 );
 

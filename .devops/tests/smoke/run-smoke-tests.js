@@ -237,7 +237,6 @@ async function expectListPayload(response, { context, minLength }) {
     throw new Error(`${context} did not return JSON: ${error.message}`);
   }
 
-  const isArrayPayload = Array.isArray(payload);
   const isPaginatedPayload =
     payload &&
     typeof payload === 'object' &&
@@ -247,11 +246,11 @@ async function expectListPayload(response, { context, minLength }) {
     typeof payload.offset === 'number';
 
   assert.ok(
-    isArrayPayload || isPaginatedPayload,
-    `${context} did not return an array or paginated payload { items, total, limit, offset }`,
+    isPaginatedPayload,
+    `${context} did not return a paginated payload { items, total, limit, offset }`,
   );
 
-  const items = isArrayPayload ? payload : payload.items;
+  const items = payload.items;
 
   if (typeof minLength === 'number') {
     assert.ok(

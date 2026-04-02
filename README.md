@@ -164,9 +164,6 @@ Default response shape:
 }
 ```
 
-Backward compatibility:
-- Pass `legacy=true` to keep the historical array response format during migration.
-
 ### apps-service health check (Node/Express)
 - **Endpoint:** `GET http://localhost:4000/healthz`
 - **Response shape:** JSON object with `{ status, uptime, timestamp }`

@@ -22,8 +22,7 @@ public class DependenciesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> GetDependencies(
         [FromQuery] int? limit,
-        [FromQuery] int? offset,
-        [FromQuery] bool legacy = false
+        [FromQuery] int? offset
     )
     {
         var parsedLimit = limit ?? DefaultLimit;
@@ -36,11 +35,6 @@ public class DependenciesController : ControllerBase
 
         parsedLimit = Math.Min(parsedLimit, MaxLimit);
         var (items, total) = await _repository.GetAllAsync(parsedLimit, parsedOffset);
-
-        if (legacy)
-        {
-            return Ok(items);
-        }
 
         return Ok(new
         {

@@ -36,7 +36,7 @@ The service will listen on `http://localhost:5000` by default. To use a differen
 ## API
 All endpoints are prefixed with `/api`.
 
-- `GET /api/services` — list services (supports `appId`, `limit`, `offset`, `legacy`)
+- `GET /api/services` — list services (supports `appId`, `limit`, `offset`)
 - `POST /api/services` — create a service. JSON body: `{ "name": "Example", "description": "Optional details" }`
 - `GET /api/services/<id>` — fetch a single service
 - `PUT /api/services/<id>` — update name and/or description
@@ -66,6 +66,3 @@ Response format:
   "offset": 0
 }
 ```
-
-Backward compatibility:
-- Add `legacy=true` to `GET /api/services` to receive the historical array format.

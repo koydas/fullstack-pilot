@@ -36,8 +36,6 @@ def list_services():
         abort(400, description=str(exc))
 
     payload = _repository().list_services(app_id, limit, offset)
-    if request.args.get("legacy") == "true":
-        return jsonify(payload["items"])
     return jsonify(payload)
 
 
