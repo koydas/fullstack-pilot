@@ -16,7 +16,7 @@
 - Review-ready defaults: lintable frontend, environment-based config, and repeatable init scripts for dependencies.
 
 ## Goals / Non-goals
-- **Goals:** show end-to-end CRUD across a polyglot data layer (MongoDB, PostgreSQL, SQL Server), demonstrate multi-service wiring, and keep setup friction low.
+- **Goals:** show end-to-end CRUD across a polyglot data layer (MongoDB, PostgreSQL, SQL Server), demonstrate multi-service wiring, keep setup friction low, and provide basic observability across services (structured logging and health endpoints).
 - **Non-goals:** production auth, extensive test coverage, or cloud-specific deployment templates.
 
 ## Prerequisites
