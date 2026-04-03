@@ -38,6 +38,7 @@ jobs:
           MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
+          INTERNAL_LOGS_TOKEN: ci-internal-logs-token
         run: |
           docker compose up -d --build
 
@@ -56,6 +57,7 @@ jobs:
           MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
+          INTERNAL_LOGS_TOKEN: ci-internal-logs-token
         run: |
           docker compose ps
           docker compose logs
@@ -66,4 +68,5 @@ jobs:
           MSSQL_SA_PASSWORD: CiSmoke_Strong!Passw0rd1
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
+          INTERNAL_LOGS_TOKEN: ci-internal-logs-token
         run: docker compose down --volumes
