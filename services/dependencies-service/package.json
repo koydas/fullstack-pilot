@@ -1,0 +1,7 @@
+{
+  "name": "dependencies-service",
+  "private": true,
+  "scripts": {
+    "test": "dotnet test --nologo --verbosity minimal"
+  }
+}

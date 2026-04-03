@@ -1,7 +1,7 @@
 {
   "name": "fullstack-pilot",
   "version": "0.0.0",
-  "description": "Here’s a README template for **FullStack Pilot** in English:",
+  "description": "Here\u2019s a README template for **FullStack Pilot** in English:",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -12,8 +12,11 @@
     "init:client": "cd client && npm install",
     "test:smoke": "node .devops/tests/smoke/run-smoke-tests.js",
     "test:apps-service": "cd services/apps-service && npm test",
+    "test:services-service": "npm --prefix services/services-service test",
+    "test:dependencies-service": "npm --prefix services/dependencies-service test",
+    "test:agent-service": "npm --prefix services/agent-service test",
     "test:client": "cd client && npm test",
-    "test:all": "npm run test:apps-service && npm run test:client",
+    "test:all": "npm run test:apps-service && npm run test:services-service && npm run test:dependencies-service && npm run test:agent-service && npm run test:client",
     "start:apps-service": "cd services/apps-service && npm run dev",
     "start:client": "cd client && npm run dev",
     "start:services": "node .devops/start-all-services.js",
