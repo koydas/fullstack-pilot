@@ -10,6 +10,11 @@ const DEFAULT_TRUST_PROXY = false;
 const DEFAULT_PR_DIFF_MAX_CHARS = 100000;
 const DEFAULT_PR_DIFF_OVERSIZE_MODE = 'reject';
 const DEFAULT_ANTHROPIC_TIMEOUT_MS = 10000;
+const DEFAULT_POLL_FETCH_TIMEOUT_MS = 4000;
+const DEFAULT_POLL_FETCH_MAX_ATTEMPTS = 3;
+const DEFAULT_POLL_FETCH_BASE_BACKOFF_MS = 250;
+const DEFAULT_POLL_CIRCUIT_FAILURE_THRESHOLD = 3;
+const DEFAULT_POLL_CIRCUIT_COOLDOWN_MS = 120000;
 
 function readPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -29,7 +34,24 @@ function readConfig(env = process.env) {
     prDiffMaxChars: readPositiveInt(env.PR_DIFF_MAX_CHARS, DEFAULT_PR_DIFF_MAX_CHARS),
     prDiffOversizeMode: env.PR_DIFF_OVERSIZE_MODE === 'truncate' ? 'truncate' : DEFAULT_PR_DIFF_OVERSIZE_MODE,
     anthropicTimeoutMs: readPositiveInt(env.ANTHROPIC_TIMEOUT_MS, DEFAULT_ANTHROPIC_TIMEOUT_MS),
+    pollFetchTimeoutMs: readPositiveInt(env.POLL_FETCH_TIMEOUT_MS, DEFAULT_POLL_FETCH_TIMEOUT_MS),
+    pollFetchMaxAttempts: readPositiveInt(env.POLL_FETCH_MAX_ATTEMPTS, DEFAULT_POLL_FETCH_MAX_ATTEMPTS),
+    pollFetchBaseBackoffMs: readPositiveInt(env.POLL_FETCH_BASE_BACKOFF_MS, DEFAULT_POLL_FETCH_BASE_BACKOFF_MS),
+    pollCircuitFailureThreshold: readPositiveInt(
+      env.POLL_CIRCUIT_FAILURE_THRESHOLD,
+      DEFAULT_POLL_CIRCUIT_FAILURE_THRESHOLD,
+    ),
+    pollCircuitCooldownMs: readPositiveInt(env.POLL_CIRCUIT_COOLDOWN_MS, DEFAULT_POLL_CIRCUIT_COOLDOWN_MS),
   };
+}
+
+function logPollEvent(event, details = {}) {
+  console.log(JSON.stringify({
+    service: 'agent-service',
+    component: 'pollLogs',
+    event,
+    ...details,
+  }));
 }
 
 function buildRateLimiter({ rateLimitWindowMs, rateLimitIpMax, rateLimitGlobalMax }) {
@@ -111,7 +133,7 @@ function countTop(entries, key, limit = 5) {
     .map(([value, count]) => ({ value, count }));
 }
 
-function summarizeEvents(events) {
+export function summarizeEvents(events) {
   const total = events.length;
   const errors = events.filter((event) => Number(event.statusCode) >= 500);
   const slow = events.filter((event) => Number(event.durationMs) >= 1000);
@@ -245,6 +267,10 @@ export async function generatePrDescription(diff, options = {}) {
 function createHealthState(appsServiceBaseUrl) {
   return {
     lastUpdated: null,
+    lastSuccessAt: null,
+    lastErrorAt: null,
+    consecutiveFailures: 0,
+    nextPollAllowedAt: null,
     sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
     totalEvents: 0,
     anomalies: [],
@@ -259,30 +285,107 @@ function createHealthState(appsServiceBaseUrl) {
   };
 }
 
-async function pollLogs(healthState, appsServiceBaseUrl) {
+function sleep(ms, sleepFn = setTimeout) {
+  return new Promise((resolve) => sleepFn(resolve, ms));
+}
+
+async function fetchLogsWithTimeout(fetchImpl, url, timeoutMs) {
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), timeoutMs);
   try {
-    const response = await fetch(`${appsServiceBaseUrl}/internal/logs/recent?limit=250`);
-    if (!response.ok) {
-      throw new Error(`apps-service responded ${response.status}`);
-    }
-
-    const payload = await response.json();
-    const events = Array.isArray(payload?.events) ? payload.events : [];
-    const summary = summarizeEvents(events);
-
-    Object.assign(healthState, summary, {
-      sourceUrl: `${appsServiceBaseUrl}/internal/logs/recent`,
-      lastUpdated: new Date().toISOString(),
-    });
+    return await fetchImpl(url, { signal: abortController.signal });
   } catch (error) {
-    healthState.lastUpdated = new Date().toISOString();
-    healthState.anomalies = [
-      {
-        type: 'monitoring_fetch_failure',
-        severity: 'high',
-        message: `Failed to fetch logs from apps-service: ${error.message}`,
-      },
-    ];
+    if (error?.name === 'AbortError') {
+      throw new Error(`apps-service request timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function pollLogs(healthState, config, deps = {}) {
+  const fetchImpl = deps.fetchImpl || fetch;
+  const nowFn = deps.nowFn || Date.now;
+  const sleepFn = deps.sleepFn || setTimeout;
+  const now = nowFn();
+  const sourceUrl = `${config.appsServiceBaseUrl}/internal/logs/recent`;
+
+  if (healthState.nextPollAllowedAt && now < Date.parse(healthState.nextPollAllowedAt)) {
+    logPollEvent('poll_skipped_circuit_open', {
+      now: new Date(now).toISOString(),
+      nextPollAllowedAt: healthState.nextPollAllowedAt,
+      consecutiveFailures: healthState.consecutiveFailures,
+    });
+    return;
+  }
+
+  let lastError;
+  for (let attempt = 1; attempt <= config.pollFetchMaxAttempts; attempt += 1) {
+    try {
+      const response = await fetchLogsWithTimeout(
+        fetchImpl,
+        `${sourceUrl}?limit=250`,
+        config.pollFetchTimeoutMs,
+      );
+      if (!response.ok) {
+        throw new Error(`apps-service responded ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const events = Array.isArray(payload?.events) ? payload.events : [];
+      const summary = summarizeEvents(events);
+      const updatedAt = new Date(nowFn()).toISOString();
+      const previousFailures = healthState.consecutiveFailures;
+
+      Object.assign(healthState, summary, {
+        sourceUrl,
+        lastUpdated: updatedAt,
+        lastSuccessAt: updatedAt,
+        consecutiveFailures: 0,
+        nextPollAllowedAt: null,
+      });
+
+      logPollEvent(previousFailures > 0 ? 'poll_recovered' : 'poll_success', {
+        attemptsUsed: attempt,
+        eventsFetched: events.length,
+        previousFailures,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      const retriesLeft = config.pollFetchMaxAttempts - attempt;
+      logPollEvent('poll_attempt_failed', {
+        attempt,
+        retriesLeft,
+        error: error.message,
+      });
+
+      if (retriesLeft > 0) {
+        const backoffMs = config.pollFetchBaseBackoffMs * (2 ** (attempt - 1));
+        await sleep(backoffMs, sleepFn);
+      }
+    }
+  }
+
+  const failedAtIso = new Date(nowFn()).toISOString();
+  healthState.lastUpdated = failedAtIso;
+  healthState.lastErrorAt = failedAtIso;
+  healthState.consecutiveFailures += 1;
+  healthState.anomalies = [
+    {
+      type: 'monitoring_fetch_failure',
+      severity: 'high',
+      message: `Failed to fetch logs from apps-service: ${lastError.message}`,
+    },
+  ];
+
+  if (healthState.consecutiveFailures >= config.pollCircuitFailureThreshold) {
+    healthState.nextPollAllowedAt = new Date(nowFn() + config.pollCircuitCooldownMs).toISOString();
+    logPollEvent('circuit_opened', {
+      consecutiveFailures: healthState.consecutiveFailures,
+      nextPollAllowedAt: healthState.nextPollAllowedAt,
+    });
   }
 }
 
@@ -290,6 +393,7 @@ export function createApp(options = {}) {
   const config = { ...readConfig(), ...options };
   const app = express();
   const healthState = createHealthState(config.appsServiceBaseUrl);
+  const pollDeps = options.pollDeps || {};
 
   app.set('trust proxy', config.trustProxy);
   app.use(express.json({ limit: '1mb' }));
@@ -346,9 +450,10 @@ export function createApp(options = {}) {
 
   return {
     app,
-    poll: () => pollLogs(healthState, config.appsServiceBaseUrl),
+    poll: () => pollLogs(healthState, config, pollDeps),
     pollIntervalMs: config.pollIntervalMs,
     port: config.port,
+    healthState,
   };
 }
 
