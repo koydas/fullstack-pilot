@@ -6,6 +6,11 @@ on:
     paths:
       - "client/**"
       - ".github/workflows/build-frontend.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "client/**"
+      - ".github/workflows/build-frontend.yml"
   workflow_dispatch:
 
 env:
