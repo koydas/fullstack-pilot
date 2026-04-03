@@ -240,8 +240,25 @@ Default response shape:
 - **Local test:**
   - `curl -s http://localhost:5000/healthz`
 
+
+
+## Test prerequisites
+Run `npm run init` first so Node dependencies are installed for the repository and services.
+
+`npm run test:all` now executes these commands in sequence:
+- `npm run test:apps-service` (Node.js tests in `services/apps-service`)
+- `npm run test:services-service` (Python `unittest` tests in `services/services-service/tests`)
+- `npm run test:dependencies-service` (.NET tests/build validation via `dotnet test` in `services/dependencies-service`)
+- `npm run test:agent-service` (Node.js tests in `services/agent-service`)
+- `npm run test:client` (frontend tests)
+
+Additional local prerequisites for deterministic runs:
+- Python 3.10+ available as `python` for `services-service` tests.
+- .NET 8 SDK available on PATH for `dependencies-service` tests.
+- Node.js 18+ for Node-based services and frontend tests.
+
 ## Project conventions
 - **Naming/layout:** backend services live under `services/<name>-service` with their own `package.json` (or equivalent) and Dockerfile; the React app lives in `client/`.
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
 - **Adding a service:** create `services/<new-service>`, include a runnable dev script (`npm run dev` or `start`), add a Dockerfile, expose a unique port, and wire it into `docker-compose.yml` (and `.devops` manifests if you want GitOps support).
-- **Scripts to know:** `npm run init` installs all service/client dependencies; `npm run start:services` starts every service that has a `dev`/`start` script; smoke tests live under `.devops/tests/smoke/`.
+- **Scripts to know:** `npm run init` installs all service/client dependencies; `npm run start:services` starts every service that has a `dev`/`start` script; smoke tests live under `.devops/tests/smoke/`; `npm run test:all` runs the client plus all service test commands.
