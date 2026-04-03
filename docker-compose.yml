@@ -29,7 +29,10 @@ services:
     container_name: fullstack-pilot-apps-service
     environment:
       PORT: 4000
+      NODE_ENV: production
       MONGODB_URI: mongodb://mongo:27017/fullstack-pilot
+      INTERNAL_LOGS_TOKEN: ${INTERNAL_LOGS_TOKEN:?INTERNAL_LOGS_TOKEN is required (set it in .env)}
+      INTERNAL_LOGS_ALLOW_NON_PROD: "false"
     depends_on:
       - mongo
     ports:

@@ -30,10 +30,19 @@ export function loadEnvironment() {
 }
 
 export function getConfig() {
+  const internalLogsAllowNonProdRaw = process.env.INTERNAL_LOGS_ALLOW_NON_PROD;
+  const internalLogsAllowNonProd =
+    internalLogsAllowNonProdRaw == null
+      ? true
+      : ['1', 'true', 'yes', 'on'].includes(internalLogsAllowNonProdRaw.trim().toLowerCase());
+
   return {
     port: process.env.PORT || 4000,
     mongodbUri: (process.env.MONGODB_URI || DEFAULT_MONGODB_URI).trim(),
     serviceName: process.env.SERVICE_NAME || process.env.SERVICE,
     serviceBasePath: process.env.SERVICE_BASE_PATH,
+    nodeEnv: process.env.NODE_ENV || 'development',
+    internalLogsToken: process.env.INTERNAL_LOGS_TOKEN?.trim(),
+    internalLogsAllowNonProd,
   };
 }

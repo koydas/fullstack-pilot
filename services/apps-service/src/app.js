@@ -5,8 +5,15 @@ import { getActiveServices } from './servicesResolver.js';
 import { logger } from './logger.js';
 import { getRecentRequestEvents } from './logStore.js';
 
-export function createApp({ serviceName, serviceBasePath }) {
+export function createApp({
+  serviceName,
+  serviceBasePath,
+  nodeEnv = 'development',
+  internalLogsToken,
+  internalLogsAllowNonProd = true,
+}) {
   const app = express();
+  const isProduction = nodeEnv === 'production';
 
   app.use(cors());
   app.use(express.json());
@@ -21,6 +28,28 @@ export function createApp({ serviceName, serviceBasePath }) {
   });
 
   app.get('/internal/logs/recent', (req, res) => {
+    const providedToken = req.header('x-internal-token');
+
+    if (!isProduction && internalLogsAllowNonProd) {
+      // Allow local/dev observability by default outside production.
+    } else if (!internalLogsToken) {
+      return res.status(403).json({
+        error: 'forbidden',
+        message:
+          'Access to /internal/logs/recent is disabled because INTERNAL_LOGS_TOKEN is not configured.',
+      });
+    } else if (!providedToken) {
+      return res.status(401).json({
+        error: 'unauthorized',
+        message: 'Missing x-internal-token header.',
+      });
+    } else if (providedToken !== internalLogsToken) {
+      return res.status(401).json({
+        error: 'unauthorized',
+        message: 'Invalid internal token.',
+      });
+    }
+
     const limit = Number(req.query.limit || 100);
     const events = getRecentRequestEvents(limit);
 

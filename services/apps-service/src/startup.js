@@ -36,7 +36,15 @@ function closeHttpServer(server) {
 }
 
 export async function startServer(
-  { port, mongodbUri, serviceName, serviceBasePath },
+  {
+    port,
+    mongodbUri,
+    serviceName,
+    serviceBasePath,
+    nodeEnv,
+    internalLogsToken,
+    internalLogsAllowNonProd,
+  },
   {
     mongooseConnect = mongoose.connect.bind(mongoose),
     mongooseConnection = mongoose.connection,
@@ -48,7 +56,13 @@ export async function startServer(
     shutdownTimeoutMs = SHUTDOWN_TIMEOUT_MS,
   } = {}
 ) {
-  const app = appFactory({ serviceName, serviceBasePath });
+  const app = appFactory({
+    serviceName,
+    serviceBasePath,
+    nodeEnv,
+    internalLogsToken,
+    internalLogsAllowNonProd,
+  });
   let server;
 
   try {

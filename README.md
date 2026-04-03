@@ -31,6 +31,7 @@ For Docker Compose runs, define local secrets in a root `.env` file (not committ
    - `MSSQL_SA_PASSWORD` (required, strong password for SQL Server)
    - `POSTGRES_USER` and `POSTGRES_PASSWORD` (required by PostgreSQL and Flask service)
    - `AGENT_SERVICE_TOKEN` (recommended; defaults to `dev-agent-token` if unset in local compose)
+   - `INTERNAL_LOGS_TOKEN` (required by apps-service in compose for `/internal/logs/recent`)
 3. Start the stack: `docker compose up --build`
 
 > `docker-compose.yml` intentionally fails fast when these variables are missing, to avoid weak/default credentials in clear text.
@@ -218,6 +219,14 @@ Default response shape:
   - `uptime`: process uptime in seconds.
   - `timestamp`: ISO-8601 server timestamp when the check was generated.
 - **Use case:** liveness probe and load balancer target health verification.
+
+### apps-service internal logs endpoint protection
+- **Endpoint:** `GET http://localhost:4000/internal/logs/recent`
+- **Environment variables:**
+  - `INTERNAL_LOGS_TOKEN` (recommended in all environments, required in compose): expected value for header `x-internal-token`.
+  - `INTERNAL_LOGS_ALLOW_NON_PROD` (optional, default `true`): when `true`, non-production environments can access this endpoint without a token.
+- **Production behavior:** with `NODE_ENV=production`, access requires a valid `x-internal-token`; if token config is missing, endpoint returns `403`.
+- **Error responses:** returns explicit JSON with `401 unauthorized` for missing/invalid header, or `403 forbidden` when endpoint is blocked by policy.
 - **Local test:**
   - `curl -s http://localhost:4000/healthz`
 
