@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createApp, generatePrDescription } from '../src/index.js';
+import { createApp, generatePrDescription, summarizeEvents } from '../src/index.js';
 
 async function withServer(overrides, run) {
   const { app } = createApp({
@@ -195,4 +195,97 @@ test('generatePrDescription reports Anthropic timeout explicitly', async () => {
   );
 
   delete process.env.ANTHROPIC_API_KEY;
+});
+
+test('summarizeEvents computes anomalies and request trends', () => {
+  const summary = summarizeEvents([
+    { method: 'GET', path: '/api/apps', statusCode: 200, durationMs: 120 },
+    { method: 'GET', path: '/api/apps', statusCode: 503, durationMs: 1300 },
+    { method: 'POST', path: '/api/apps', statusCode: 500, durationMs: 1400 },
+  ]);
+
+  assert.equal(summary.totalEvents, 3);
+  assert.equal(summary.requestTrends.totalRequests, 3);
+  assert.equal(summary.requestTrends.errorRate, 66.67);
+  assert.equal(summary.requestTrends.avgDurationMs, 940);
+  assert.equal(summary.requestTrends.topPaths[0].value, '/api/apps');
+  assert.equal(summary.errorPatterns['GET /api/apps 503'], 1);
+  assert.equal(summary.errorPatterns['POST /api/apps 500'], 1);
+  assert.deepEqual(
+    summary.anomalies.map((entry) => entry.type).sort(),
+    ['server_errors', 'slow_requests'],
+  );
+});
+
+test('poll retries then opens circuit after threshold failures', async () => {
+  let attempts = 0;
+  let now = 1000;
+  const fetchImpl = async () => {
+    attempts += 1;
+    throw new Error('upstream unavailable');
+  };
+
+  const serverContext = createApp({
+    appsServiceBaseUrl: 'http://apps-service:4000',
+    pollFetchMaxAttempts: 3,
+    pollFetchBaseBackoffMs: 1,
+    pollFetchTimeoutMs: 5,
+    pollCircuitFailureThreshold: 1,
+    pollCircuitCooldownMs: 5000,
+    pollDeps: {
+      fetchImpl,
+      nowFn: () => now,
+      sleepFn: (cb) => cb(),
+    },
+  });
+
+  await serverContext.poll();
+  assert.equal(attempts, 3);
+  assert.equal(serverContext.healthState.consecutiveFailures, 1);
+  assert.equal(serverContext.healthState.lastErrorAt, new Date(now).toISOString());
+  assert.equal(serverContext.healthState.nextPollAllowedAt, new Date(now + 5000).toISOString());
+
+  await serverContext.poll();
+  assert.equal(attempts, 3);
+});
+
+test('poll resets failure state after recovery', async () => {
+  let mode = 'fail';
+  let now = 1000;
+  const fetchImpl = async () => {
+    if (mode === 'fail') {
+      throw new Error('temporary failure');
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        events: [{ method: 'GET', path: '/api/apps', statusCode: 200, durationMs: 50 }],
+      }),
+    };
+  };
+
+  const serverContext = createApp({
+    appsServiceBaseUrl: 'http://apps-service:4000',
+    pollFetchMaxAttempts: 1,
+    pollCircuitFailureThreshold: 5,
+    pollDeps: {
+      fetchImpl,
+      nowFn: () => now,
+      sleepFn: (cb) => cb(),
+    },
+  });
+
+  await serverContext.poll();
+  assert.equal(serverContext.healthState.consecutiveFailures, 1);
+  assert.equal(serverContext.healthState.lastErrorAt, new Date(now).toISOString());
+
+  mode = 'success';
+  now = 2000;
+  await serverContext.poll();
+
+  assert.equal(serverContext.healthState.consecutiveFailures, 0);
+  assert.equal(serverContext.healthState.lastSuccessAt, new Date(now).toISOString());
+  assert.equal(serverContext.healthState.nextPollAllowedAt, null);
+  assert.equal(serverContext.healthState.totalEvents, 1);
 });
