@@ -18,4 +18,4 @@ npm run dev -- --host
 
 ## Notes
 - Environment variables come from `vite.config.js` and `.env` files (see Vite docs for prefixes). When running via Docker Compose the proxy is preconfigured.
-- The UI consumes the Node API at `/api/projects` and can be extended to call the optional Flask and .NET services.
+- The UI consumes the Node API at `/api/apps` and can be extended to call the optional Flask and .NET services.

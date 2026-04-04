@@ -23,9 +23,9 @@ flowchart TD
     Deploy --> Client
     Deploy --> Services
 
-    Client -->|API calls /api/projects| AppsService
+    Client -->|API calls /api/apps| AppsService
     Client -->|CRUD /api/dependencies| DotNetService
-    Client -->|CRUD /api| PythonService
+    Client -->|CRUD /api/services| PythonService
 
     AppsService -->|Project data| Mongo
     DotNetService -->|Dependencies data| MSSQL
