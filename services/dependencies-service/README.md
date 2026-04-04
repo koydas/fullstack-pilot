@@ -67,3 +67,22 @@ Response format:
 ## Monitoring
 
 A simple middleware logs each HTTP request with the method, path, status code, and response time. When the service runs via `dotnet run` or Docker Compose, these events appear in the console logs to help track service health.
+
+## Database migrations (EF Core)
+Schema changes are versioned with EF Core migrations.
+The service uses `Database.Migrate()` during startup in `Development` (or when `Database:MigrateOnStartup=true`).
+If startup auto-migration is disabled and pending migrations are found, startup fails fast.
+
+Apply migrations manually:
+
+```bash
+cd services/dependencies-service
+dotnet ef database update
+```
+
+Create a new migration:
+
+```bash
+cd services/dependencies-service
+dotnet ef migrations add <MigrationName>
+```

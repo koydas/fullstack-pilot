@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { createApp } from './app.js';
 import { logger } from './logger.js';
+import { runMongoMigrations, shouldRunMigrations } from './migrations.js';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -51,6 +52,7 @@ export async function startServer(
     appFactory = createApp,
     appLogger = logger,
     processRef = process,
+    runMigrations = runMongoMigrations,
     setTimeoutFn = setTimeout,
     clearTimeoutFn = clearTimeout,
     shutdownTimeoutMs = SHUTDOWN_TIMEOUT_MS,
@@ -66,6 +68,11 @@ export async function startServer(
   let server;
 
   try {
+    if (shouldRunMigrations(nodeEnv)) {
+      await runMigrations();
+      appLogger.info('mongodb migrations applied');
+    }
+
     await mongooseConnect(mongodbUri);
     appLogger.info({ mongodbUri: sanitizeConnectionString(mongodbUri) }, 'connected to MongoDB');
 

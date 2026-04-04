@@ -41,6 +41,7 @@ describe('startup logging sanitization', () => {
         mongooseConnect: async () => {},
         appFactory: () => app,
         appLogger,
+        runMigrations: async () => {},
         processRef: { on: () => {}, exit: () => {} },
       }
     );
@@ -51,6 +52,39 @@ describe('startup logging sanitization', () => {
     assert.equal(connectionLog[0].mongodbUri, 'mongodb://***:***@localhost:27017/fullstack-pilot?authSource=admin');
     assert.equal(connectionLog[0].mongodbUri.includes('dbUser'), false);
     assert.equal(connectionLog[0].mongodbUri.includes('dbPassword'), false);
+  });
+
+
+  it('runs mongodb migrations before opening database connection in non-production', async () => {
+    const order = [];
+
+    await startServer(
+      {
+        port: 4000,
+        mongodbUri: 'mongodb://localhost:27017/fullstack-pilot',
+        serviceName: 'apps',
+        serviceBasePath: '/',
+        nodeEnv: 'development',
+      },
+      {
+        runMigrations: async () => {
+          order.push('migrations');
+        },
+        mongooseConnect: async () => {
+          order.push('connect');
+        },
+        appFactory: () => ({
+          listen: (_port, callback) => {
+            callback();
+            return { close: (cb) => cb() };
+          },
+        }),
+        appLogger: { info: () => {}, error: () => {} },
+        processRef: { on: () => {}, exit: () => {} },
+      }
+    );
+
+    assert.deepEqual(order, ['migrations', 'connect']);
   });
 
   it('gracefully shuts down HTTP server then MongoDB on SIGTERM', async () => {
@@ -93,6 +127,7 @@ describe('startup logging sanitization', () => {
         },
         appFactory: () => app,
         appLogger: { info: () => {}, error: () => {} },
+        runMigrations: async () => {},
         processRef,
         setTimeoutFn: () => 'timer-id',
         clearTimeoutFn: () => {},

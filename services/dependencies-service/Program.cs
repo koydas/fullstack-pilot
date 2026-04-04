@@ -19,10 +19,25 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+var migrateOnStartup = app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue<bool>("Database:MigrateOnStartup");
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DependenciesDbContext>();
-    db.Database.EnsureCreated();
+
+    if (migrateOnStartup)
+    {
+        db.Database.Migrate();
+    }
+    else
+    {
+        var pendingMigrations = db.Database.GetPendingMigrations().ToList();
+        if (pendingMigrations.Any())
+        {
+            throw new InvalidOperationException($"Pending migrations detected: {string.Join(", ", pendingMigrations)}");
+        }
+    }
 
     if (!db.Dependencies.Any())
     {

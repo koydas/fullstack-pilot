@@ -20,8 +20,6 @@ def create_app() -> Flask:
     app.config["START_TIME"] = time.perf_counter()
     app.config["POSTGRES_DSN"] = os.environ.get("POSTGRES_DSN")
     repository = ServicesRepository(app.config["POSTGRES_DSN"])
-    repository.init_schema()
-
     app.config["REPOSITORY"] = repository
 
     @app.get("/healthz")
