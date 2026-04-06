@@ -1,8 +1,17 @@
-# AGENT.md
+# AGENTS.md
 
 ## Mission
 - This repository hosts a full-stack system (React frontend + Node/Python/.NET backend services + Docker orchestration).
 - Optimize for minimal diffs, correctness, and consistency with existing architecture and patterns.
+
+## Repo structure overview
+- `client/`: React + Vite frontend.
+- `services/apps-service/`: Node + MongoDB API.
+- `services/services-service/`: Flask + PostgreSQL API.
+- `services/dependencies-service/`: .NET + SQL Server API.
+- `services/agent-service/`: internal AI-support service.
+- `docs/`: architecture, ADRs, and workflow docs.
+- `scripts/`: automation scripts.
 
 ## Scope Rules
 - Modify only files directly required by the task.
@@ -40,6 +49,12 @@
    - risks and tradeoffs,
    - remaining gaps or follow-ups.
 
+## Implementation Rules
+- Reuse existing patterns (routing, handlers, data access, config) before introducing alternatives.
+- Keep changes localized and minimal-diff first.
+- Prefer diff-based edits over broad rewrites.
+- Avoid speculative refactors or “while here” changes.
+
 ## Validation Policy
 - Frontend changes:
   - `npm --prefix client test -- --run`
@@ -57,20 +72,28 @@
 ## Architecture Constraints
 - Respect strict service boundaries between frontend, Node API, Python API, and .NET API.
 - Do not create tight coupling across services (shared internals, implicit cross-service dependencies).
-- Reuse existing patterns (routing, handlers, data access, config) before introducing alternatives.
 - Keep data flow and contracts consistent with current architecture/ADR decisions.
 
-## Quality Rules
-- Minimal diff first; avoid broad rewrites.
-- Eliminate duplication only within task scope.
-- No speculative refactors or “while here” changes.
-- Prioritize readability and maintainability over clever implementations.
+## Documentation Rules
 - Keep all documentation content in English (especially `README.md`).
+- Update only documentation impacted by implemented behavior.
+- `README.md` updates should be append-only unless explicitly requested.
 
 ## Failure Handling
 - If requirements are unclear, apply the simplest valid solution and state assumptions explicitly.
 - If context is missing, state what is missing and what decision was made with available information.
 - If validation cannot run, report exactly what was skipped and why.
+
+## PR Expectations
+- One focused branch and one focused commit per issue.
+- Include validation evidence and explicit assumptions in PR description.
+- Do not force push in automated flow.
+
+## DO NOT rules
+- Do not scan/load the full repository when targeted context is enough.
+- Do not introduce unrelated architecture or dependencies.
+- Do not commit changes that were not validated.
+- Do not include unrelated formatting-only edits.
 
 ## High-Signal Commands
 
@@ -123,3 +146,9 @@ Before starting any task that modifies code or infrastructure:
 No code change without a traceable issue. No exceptions.
 
 ---
+
+## Definition of Done
+- Requested behavior is implemented with minimal scope and localized diffs.
+- Validation checks pass (or skipped checks are explicitly justified).
+- Documentation is aligned with actual behavior.
+- Branch, single commit, and PR are created successfully.

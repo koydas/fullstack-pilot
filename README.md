@@ -262,3 +262,35 @@ Additional local prerequisites for deterministic runs:
 - **Environment:** each service reads from a local `.env` file when present (e.g., `PORT`, `MONGODB_URI`, `POSTGRES_DSN`, `ASPNETCORE_URLS`, `ConnectionStrings__DependenciesDb`).
 - **Adding a service:** create `services/<new-service>`, include a runnable dev script (`npm run dev` or `start`), add a Dockerfile, expose a unique port, and wire it into `docker-compose.yml` (and `.devops` manifests if you want GitOps support).
 - **Scripts to know:** `npm run init` installs all service/client dependencies; `npm run start:services` starts every service that has a `dev`/`start` script; smoke tests live under `.devops/tests/smoke/`; `npm run test:all` runs the client plus all service test commands.
+
+## Autonomous Issue → PR runner
+A minimal deterministic runner is available at `scripts/ai-agent-run.js` for CI-oriented automation.
+
+### What it does
+- Calls three LLM roles in order: Planner → Implementer → Reviewer.
+- Enforces strict JSON contracts for each stage.
+- Applies code using unified diffs first (`git apply --check`), then `full_content` fallback when required.
+- Validates changes before commit (diff sanity, non-empty files, JS syntax check).
+- Creates `ai/issue-{id}` branch, performs a single commit, and pushes the branch.
+
+### Required environment
+- `OPENAI_BASE_URL` (OpenAI-compatible endpoint; defaults to `http://localhost:11434/v1`)
+- `OPENAI_API_KEY` (optional for local Ollama; default fallback is used)
+- `OPENAI_MODEL`
+
+### Usage
+```bash
+node scripts/ai-agent-run.js --issue-id=123 --issue="Implement X with Y constraints"
+# or
+node scripts/ai-agent-run.js --issue-id=123 --issue-file=.tmp/issue-123.md
+```
+
+### Local Llama/Qwen example (Ollama)
+```bash
+export OPENAI_BASE_URL=http://localhost:11434/v1
+export OPENAI_MODEL=qwen2.5-coder:14b
+# or: export OPENAI_MODEL=llama3.1:8b
+node scripts/ai-agent-run.js --issue-id=123 --issue-file=.tmp/issue-123.md
+```
+
+If any safety gate fails (invalid JSON, unsafe review, diff/apply failure, validation failure), the script aborts without committing.
