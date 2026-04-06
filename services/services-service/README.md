@@ -66,3 +66,21 @@ Response format:
   "offset": 0
 }
 ```
+
+## Database migrations (Alembic)
+Schema changes are versioned with Alembic migrations and are no longer created/altered at runtime by the Flask app.
+
+Run migrations before starting the API:
+
+```bash
+cd services/services-service
+alembic -c alembic.ini upgrade head
+python app.py
+```
+
+Create a new migration:
+
+```bash
+cd services/services-service
+alembic -c alembic.ini revision -m "describe change"
+```

@@ -17,28 +17,6 @@ class ServicesRepository:
         conninfo = dsn or os.environ.get("POSTGRES_DSN") or DEFAULT_POSTGRES_DSN
         self.pool = ConnectionPool(conninfo=conninfo)
 
-    def init_schema(self) -> None:
-        """Ensure the backing table exists."""
-        with self.pool.connection() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS services (
-                        id SERIAL PRIMARY KEY,
-                        name TEXT NOT NULL,
-                        description TEXT NOT NULL DEFAULT '',
-                        app_id TEXT NOT NULL DEFAULT ''
-                    )
-                    """
-                )
-                cursor.execute(
-                    """
-                    ALTER TABLE services
-                    ADD COLUMN IF NOT EXISTS app_id TEXT NOT NULL DEFAULT ''
-                    """
-                )
-                connection.commit()
-
     def list_services(self, app_id: str, limit: int, offset: int) -> Dict[str, object]:
         with self.pool.connection() as connection:
             with connection.cursor(row_factory=dict_row) as cursor:
