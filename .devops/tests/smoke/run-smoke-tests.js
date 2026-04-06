@@ -15,6 +15,14 @@ const { runMssqlCheck, ensureMssqlHelper } = createMssqlUtils({
   isContainerPresent,
 });
 
+const smokeDebugContainers = {
+  "apps-service": "fullstack-pilot-apps-service",
+  "services-service": "fullstack-pilot-services-service",
+  "dependencies-service": "fullstack-pilot-dependencies-service",
+  "agent-service health-summary": "fullstack-pilot-agent-service",
+  "agent-service pr-description": "fullstack-pilot-agent-service",
+};
+
 const services = [
   {
     name: 'mongo-db',
@@ -93,9 +101,50 @@ const services = [
   },
 ];
 
+function formatErrorDetails(error) {
+  const message = error?.message || String(error);
+  const cause = error?.cause?.message ? ` | cause: ${error.cause.message}` : '';
+  return `${message}${cause}`;
+}
+
+
+function dumpServiceDiagnostics(serviceName) {
+  const containerName = smokeDebugContainers[serviceName];
+  if (!containerName || !isDockerAvailable() || !isContainerPresent(containerName)) {
+    return;
+  }
+
+  try {
+    console.log(`\n--- docker logs (${containerName}, last 80 lines) ---`);
+    const logs = childProcess.execSync(`docker logs --tail 80 ${containerName}`, { encoding: 'utf8' });
+    console.log(logs.trim());
+    console.log('--- end docker logs ---\n');
+  } catch (error) {
+    console.warn(`Unable to read docker logs for ${containerName}: ${error.message}`);
+  }
+}
+
 async function runHttpTest(url, validate, options) {
   const response = await fetchWithTimeout(url, options);
-  await validate(response);
+  const diagnosticResponse = response.clone();
+
+  try {
+    await validate(response);
+  } catch (error) {
+    let bodySnippet = '<unavailable>';
+
+    try {
+      const body = await diagnosticResponse.text();
+      bodySnippet = body ? body.slice(0, 500) : '<empty>';
+    } catch {
+      bodySnippet = '<failed to read body>';
+    }
+
+    throw new Error(
+      `${error.message} | url=${url} | status=${response.status} ${response.statusText} | body=${bodySnippet}`,
+      { cause: error },
+    );
+  }
 }
 
 async function fetchWithTimeout(url, options = {}) {
@@ -327,14 +376,16 @@ async function runTest({ name, run, setup }) {
       return;
     } catch (error) {
       lastError = error;
-      console.log('failed');
+      console.log(`failed (${formatErrorDetails(error)})`);
       if (attempt < retries) {
         await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
       }
     }
   }
 
-  throw new Error(`Smoke test failed for ${name}: ${lastError?.message || 'Unknown error'}`);
+  const details = lastError ? formatErrorDetails(lastError) : 'Unknown error';
+  dumpServiceDiagnostics(name);
+  throw new Error(`Smoke test failed for ${name}: ${details}`);
 }
 
 async function main() {
@@ -346,5 +397,8 @@ async function main() {
 
 main().catch((error) => {
   console.error(`\nSmoke test run failed: ${error.message}`);
+  if (error?.stack) {
+    console.error(error.stack);
+  }
   process.exit(1);
 });

@@ -7,7 +7,11 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "start:apps": "SERVICE_NAME=apps SERVICE_BASE_PATH=/ node src/index.js",
-    "test": "node --test"
+    "test": "node --test",
+    "migrate:create": "node scripts/migrate.js create",
+    "migrate:up": "node scripts/migrate.js up",
+    "migrate:down": "node scripts/migrate.js down",
+    "migrate:status": "node scripts/migrate.js status"
   },
   "dependencies": {
     "cors": "^2.8.5",

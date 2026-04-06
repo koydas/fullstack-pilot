@@ -127,6 +127,11 @@ This repo intentionally splits responsibilities across independent services so e
 
 - **Visual:** the mermaid architecture diagram lives in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+
+## Database migrations
+Versioned migrations are used by all DB-backed backend services (`apps-service`, `services-service`, `dependencies-service`).
+See the dedicated workflow guide in [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md).
+
 ## AI-Native Development
 
 This repository is built and maintained using AI agents (OpenAI Codex).  
