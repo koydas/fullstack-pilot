@@ -19,10 +19,17 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+var migrateOnStartup = app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue("Database:MigrateOnStartup", true);
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DependenciesDbContext>();
-    db.Database.EnsureCreated();
+
+    if (migrateOnStartup)
+    {
+        db.Database.Migrate();
+    }
 
     if (!db.Dependencies.Any())
     {
