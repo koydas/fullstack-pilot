@@ -129,7 +129,7 @@ This repo intentionally splits responsibilities across independent services so e
 
 ## AI-Native Development
 
-This repository is built and maintained using AI agents (OpenAI Codex).  
+This repository is built and maintained using AI agents.
 Agent behavior, scope rules, exploration strategy, and execution workflow are governed by [`AGENTS.md`](./AGENTS.md).
 
 ## Architecture decisions
