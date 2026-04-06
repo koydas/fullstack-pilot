@@ -87,6 +87,41 @@ describe('startup logging sanitization', () => {
     assert.deepEqual(order, ['migrations', 'connect']);
   });
 
+
+  it('retries MongoDB connection before failing startup', async () => {
+    let attempts = 0;
+
+    await startServer(
+      {
+        port: 4000,
+        mongodbUri: 'mongodb://localhost:27017/fullstack-pilot',
+        serviceName: 'apps',
+        serviceBasePath: '/',
+      },
+      {
+        mongooseConnect: async () => {
+          attempts += 1;
+          if (attempts < 3) {
+            throw new Error('temporary connect failure');
+          }
+        },
+        appFactory: () => ({
+          listen: (_port, callback) => {
+            callback();
+            return { close: (cb) => cb() };
+          },
+        }),
+        appLogger: { info: () => {}, error: () => {} },
+        runMigrations: async () => {},
+        processRef: { on: () => {}, exit: () => {} },
+        mongoConnectRetries: 3,
+        mongoConnectRetryDelayMs: 0,
+      }
+    );
+
+    assert.equal(attempts, 3);
+  });
+
   it('gracefully shuts down HTTP server then MongoDB on SIGTERM', async () => {
     const events = [];
     const handlers = {};

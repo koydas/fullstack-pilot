@@ -93,9 +93,33 @@ const services = [
   },
 ];
 
+function formatErrorDetails(error) {
+  const message = error?.message || String(error);
+  const cause = error?.cause?.message ? ` | cause: ${error.cause.message}` : '';
+  return `${message}${cause}`;
+}
+
 async function runHttpTest(url, validate, options) {
   const response = await fetchWithTimeout(url, options);
-  await validate(response);
+  const diagnosticResponse = response.clone();
+
+  try {
+    await validate(response);
+  } catch (error) {
+    let bodySnippet = '<unavailable>';
+
+    try {
+      const body = await diagnosticResponse.text();
+      bodySnippet = body ? body.slice(0, 500) : '<empty>';
+    } catch {
+      bodySnippet = '<failed to read body>';
+    }
+
+    throw new Error(
+      `${error.message} | url=${url} | status=${response.status} ${response.statusText} | body=${bodySnippet}`,
+      { cause: error },
+    );
+  }
 }
 
 async function fetchWithTimeout(url, options = {}) {
@@ -327,14 +351,15 @@ async function runTest({ name, run, setup }) {
       return;
     } catch (error) {
       lastError = error;
-      console.log('failed');
+      console.log(`failed (${formatErrorDetails(error)})`);
       if (attempt < retries) {
         await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
       }
     }
   }
 
-  throw new Error(`Smoke test failed for ${name}: ${lastError?.message || 'Unknown error'}`);
+  const details = lastError ? formatErrorDetails(lastError) : 'Unknown error';
+  throw new Error(`Smoke test failed for ${name}: ${details}`);
 }
 
 async function main() {
@@ -346,5 +371,8 @@ async function main() {
 
 main().catch((error) => {
   console.error(`\nSmoke test run failed: ${error.message}`);
+  if (error?.stack) {
+    console.error(error.stack);
+  }
   process.exit(1);
 });

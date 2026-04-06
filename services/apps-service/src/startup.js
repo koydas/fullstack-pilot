@@ -4,6 +4,32 @@ import { logger } from './logger.js';
 import { runMongoMigrations, shouldRunMigrations } from './migrations.js';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
+const MONGO_CONNECT_RETRIES = Number.parseInt(process.env.MONGO_CONNECT_RETRIES || '10', 10);
+const MONGO_CONNECT_RETRY_DELAY_MS = Number.parseInt(process.env.MONGO_CONNECT_RETRY_DELAY_MS || '1000', 10);
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function connectWithRetries(mongooseConnect, mongodbUri, appLogger, retries, retryDelayMs) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      await mongooseConnect(mongodbUri);
+      return;
+    } catch (error) {
+      lastError = error;
+      const message = error?.message || String(error);
+      if (attempt < retries) {
+        appLogger.info({ attempt, retries, retryDelayMs, error: message }, 'mongo connection failed, retrying');
+        await wait(retryDelayMs);
+      }
+    }
+  }
+
+  throw lastError;
+}
 
 export function sanitizeConnectionString(connectionString) {
   if (typeof connectionString !== 'string') {
@@ -56,6 +82,8 @@ export async function startServer(
     setTimeoutFn = setTimeout,
     clearTimeoutFn = clearTimeout,
     shutdownTimeoutMs = SHUTDOWN_TIMEOUT_MS,
+    mongoConnectRetries = MONGO_CONNECT_RETRIES,
+    mongoConnectRetryDelayMs = MONGO_CONNECT_RETRY_DELAY_MS,
   } = {}
 ) {
   const app = appFactory({
@@ -73,7 +101,7 @@ export async function startServer(
       appLogger.info('mongodb migrations applied');
     }
 
-    await mongooseConnect(mongodbUri);
+    await connectWithRetries(mongooseConnect, mongodbUri, appLogger, mongoConnectRetries, mongoConnectRetryDelayMs);
     appLogger.info({ mongodbUri: sanitizeConnectionString(mongodbUri) }, 'connected to MongoDB');
 
     server = app.listen(port, () => {
