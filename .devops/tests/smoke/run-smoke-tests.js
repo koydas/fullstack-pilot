@@ -8,7 +8,7 @@ const retries = Number(process.env.SMOKE_RETRIES || 10);
 const retryDelayMs = Number(process.env.SMOKE_RETRY_DELAY_MS || 2000);
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 5000);
 const smokeAgentServiceToken =
-  process.env.SMOKE_AGENT_SERVICE_TOKEN || process.env.AGENT_SERVICE_TOKEN || 'dev-agent-token';
+  process.env.SMOKE_AGENT_SERVICE_TOKEN || process.env.AGENT_SERVICE_TOKEN || '';
 const { runMssqlCheck, ensureMssqlHelper } = createMssqlUtils({
   timeoutMs,
   isDockerAvailable,
@@ -70,6 +70,11 @@ const services = [
   },
   {
     name: 'agent-service pr-description',
+    setup: () => {
+      if (!smokeAgentServiceToken) {
+        throw new Error('Set SMOKE_AGENT_SERVICE_TOKEN or AGENT_SERVICE_TOKEN to the token the agent-service runs with.');
+      }
+    },
     run: () =>
       runHttpTest(
         process.env.SMOKE_AGENT_SERVICE_PR_URL || 'http://localhost:7000/pr-description',

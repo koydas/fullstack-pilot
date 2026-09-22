@@ -34,4 +34,4 @@ Optional tuning variables:
 
 - `SMOKE_AGENT_SERVICE_HEALTH_URL` (default: `http://localhost:7000/health-summary`)
 - `SMOKE_AGENT_SERVICE_PR_URL` (default: `http://localhost:7000/pr-description`)
-- `SMOKE_AGENT_SERVICE_TOKEN` (default fallback order: `SMOKE_AGENT_SERVICE_TOKEN` -> `AGENT_SERVICE_TOKEN` -> `dev-agent-token`)
+- `SMOKE_AGENT_SERVICE_TOKEN` (required; falls back to `AGENT_SERVICE_TOKEN`, no hard-coded default — the run fails fast if neither is set)
