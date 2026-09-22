@@ -39,6 +39,7 @@ jobs:
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
           INTERNAL_LOGS_TOKEN: ci-internal-logs-token
+          AGENT_SERVICE_TOKEN: ci-agent-service-token
         run: |
           docker compose up -d --build
 
@@ -49,6 +50,7 @@ jobs:
           SMOKE_TIMEOUT_MS: 5000
           SMOKE_POSTGRES_URL: postgres://fullstack:fullstack@localhost:5432/fullstack-pilot
           SMOKE_MSSQL_URL: mssql://sa:CiSmoke_Strong!Passw0rd1@localhost:1433
+          SMOKE_AGENT_SERVICE_TOKEN: ci-agent-service-token
         run: npm run test:smoke
 
       - name: Dump service logs on failure
@@ -58,6 +60,7 @@ jobs:
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
           INTERNAL_LOGS_TOKEN: ci-internal-logs-token
+          AGENT_SERVICE_TOKEN: ci-agent-service-token
         run: |
           docker compose ps
           docker compose logs
@@ -69,4 +72,5 @@ jobs:
           POSTGRES_USER: fullstack
           POSTGRES_PASSWORD: fullstack
           INTERNAL_LOGS_TOKEN: ci-internal-logs-token
+          AGENT_SERVICE_TOKEN: ci-agent-service-token
         run: docker compose down --volumes

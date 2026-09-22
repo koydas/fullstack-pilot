@@ -82,7 +82,7 @@ services:
       PORT: 7000
       APPS_SERVICE_BASE_URL: http://apps-service:4000
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:-dev-agent-token}
+      AGENT_SERVICE_TOKEN: ${AGENT_SERVICE_TOKEN:?AGENT_SERVICE_TOKEN is required (set it in .env)}
     depends_on:
       - apps-service
     ports:
