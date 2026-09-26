@@ -5,11 +5,13 @@ on:
     branches: ["main"]
     paths:
       - "client/**"
+      - ".devops/runtime-version.js"
       - ".github/workflows/build-frontend.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "client/**"
+      - ".devops/runtime-version.js"
       - ".github/workflows/build-frontend.yml"
   workflow_dispatch:
 
@@ -30,10 +32,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Resolve Node.js version from Dockerfile
+        id: runtime
+        run: |
+          version=$(node .devops/runtime-version.js client/Dockerfile node)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ steps.runtime.outputs.version }}
           cache: npm
           cache-dependency-path: client/package-lock.json
 

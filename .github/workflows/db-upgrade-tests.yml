@@ -1,0 +1,111 @@
+name: Database upgrade tests
+
+# Restarts each database on an existing data volume with the image from this PR,
+# so a major version that cannot open the previous data fails before merge.
+# The `smoke` workflow only covers fresh (empty) volumes.
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "databases/**"
+      - "docker-compose.yml"
+      - ".devops/tests/db-upgrade/**"
+      - ".github/workflows/db-upgrade-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  upgrade:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: mongo (databases/mongo-db)
+            engine: mongo
+            dockerfile-dir: databases/mongo-db
+          - name: postgres (databases/postgre)
+            engine: postgres
+            dockerfile-dir: databases/postgre
+          - name: mssql (databases/mssql)
+            engine: mssql
+            dockerfile-dir: databases/mssql
+          - name: mssql (docker-compose.yml)
+            engine: mssql
+            compose-service: mssql
+          # Guards the harness itself: an incompatible major on the same volume must fail.
+          - name: self-test (postgres 16 -> 17 must fail)
+            engine: postgres
+            from-image: postgres:16
+            to-image: postgres:17
+            expect-failure: true
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v7
+        with:
+          path: head
+
+      - name: Checkout base
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          path: base
+
+      - name: Resolve images
+        id: images
+        env:
+          ENGINE: ${{ matrix.engine }}
+          DOCKERFILE_DIR: ${{ matrix.dockerfile-dir }}
+          COMPOSE_SERVICE: ${{ matrix.compose-service }}
+          FROM_IMAGE: ${{ matrix.from-image }}
+          TO_IMAGE: ${{ matrix.to-image }}
+        run: |
+          if [ -n "$FROM_IMAGE" ]; then
+            from=$FROM_IMAGE
+            to=$TO_IMAGE
+          elif [ -n "$DOCKERFILE_DIR" ]; then
+            if [ ! -f "base/$DOCKERFILE_DIR/Dockerfile" ]; then
+              echo "::notice::No $DOCKERFILE_DIR/Dockerfile on the base branch, nothing to upgrade from."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            docker build -q -t "db-upgrade-from:$ENGINE" "base/$DOCKERFILE_DIR"
+            docker build -q -t "db-upgrade-to:$ENGINE" "head/$DOCKERFILE_DIR"
+            from="db-upgrade-from:$ENGINE"
+            to="db-upgrade-to:$ENGINE"
+          else
+            from=$(yq ".services.$COMPOSE_SERVICE.image" base/docker-compose.yml)
+            to=$(yq ".services.$COMPOSE_SERVICE.image" head/docker-compose.yml)
+            if [ "$from" = "null" ] || [ "$to" = "null" ]; then
+              echo "::error::No image for service '$COMPOSE_SERVICE' in docker-compose.yml"
+              exit 1
+            fi
+          fi
+          echo "Upgrade: $from -> $to"
+          echo "from=$from" >> "$GITHUB_OUTPUT"
+          echo "to=$to" >> "$GITHUB_OUTPUT"
+
+      - name: Upgrade on existing volume
+        if: steps.images.outputs.skip != 'true'
+        env:
+          ENGINE: ${{ matrix.engine }}
+          FROM: ${{ steps.images.outputs.from }}
+          TO: ${{ steps.images.outputs.to }}
+          EXPECT_FAILURE: ${{ matrix.expect-failure }}
+        run: |
+          if [ "$EXPECT_FAILURE" = "true" ]; then
+            # Only exit code 4 proves the probe was stored and the new image then
+            # refused the data; any other failure is a broken harness or setup.
+            status=0
+            head/.devops/tests/db-upgrade/run-db-upgrade-test.sh "$ENGINE" "$FROM" "$TO" || status=$?
+            if [ "$status" -ne 4 ]; then
+              echo "::error::Expected $FROM -> $TO to exit 4 (new image exits on incompatible data), got $status."
+              exit 1
+            fi
+            echo "Incompatible upgrade detected as expected."
+          else
+            head/.devops/tests/db-upgrade/run-db-upgrade-test.sh "$ENGINE" "$FROM" "$TO"
+          fi
