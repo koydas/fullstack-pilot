@@ -12,23 +12,23 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "axios": "^1.18.0",
+    "axios": "^1.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "styled-components": "^6.1.11"
+    "styled-components": "^6.5.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
-    "@testing-library/user-event": "^14.6.1",
-    "@playwright/test": "^1.47.0",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@playwright/test": "^1.63.0",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^20.14.5",
     "jsdom": "^24.1.0",
     "eslint": "^8.57.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "vite": "^8.0.16",
+    "vite": "^8.3.0",
     "vitest": "^4.1.11"
   }
 }
