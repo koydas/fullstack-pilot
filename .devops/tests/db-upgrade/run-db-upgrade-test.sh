@@ -3,7 +3,13 @@
 #   1. start <from-image> on a fresh volume and write a probe record,
 #   2. stop it and start <to-image> on the same volume,
 #   3. check the probe record is still readable.
-# Exits non-zero when the new image cannot start on, or read, the old data.
+#
+# Exit codes:
+#   0  data readable after the upgrade
+#   3  setup failed: <from-image> could not start or store the probe
+#   4  <to-image> exited on the existing volume (incompatible data)
+#   5  <to-image> kept running but the probe could not be read back
+#   other  unexpected error (e.g. image pull failure)
 #
 # Usage: run-db-upgrade-test.sh <mongo|postgres|mssql> <from-image> <to-image>
 set -euo pipefail
@@ -66,15 +72,15 @@ db_exec() {
   esac
 }
 
-# Retries a statement until it succeeds (and, if given, prints the expected value)
-# or the container stops / the timeout expires.
+# Retries a statement until it succeeds (and, if given, prints the expected value).
+# Returns 1 on timeout, 2 if the container stopped.
 retry_until() {
   local statement=$1 expected=${2:-} deadline=$((SECONDS + timeout_seconds)) output
   while ((SECONDS < deadline)); do
     if [ "$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null)" != "true" ]; then
       echo "Container exited:" >&2
       docker logs --tail 50 "$name" >&2 || true
-      return 1
+      return 2
     fi
     if output=$(db_exec "$statement" 2>/dev/null); then
       output=$(printf '%s' "$output" | tr -d '[:space:]')
@@ -103,8 +109,8 @@ write_probe() {
         INSERT INTO upgrade_probe VALUES (1, '$probe_value') ON CONFLICT (id) DO NOTHING;"
       ;;
     mssql)
-      retry_until "IF DB_ID('upgrade_probe') IS NULL CREATE DATABASE upgrade_probe;"
-      retry_until "IF OBJECT_ID('upgrade_probe.dbo.probe') IS NULL CREATE TABLE upgrade_probe.dbo.probe (v nvarchar(50));
+      retry_until "IF DB_ID('upgrade_probe') IS NULL CREATE DATABASE upgrade_probe;" &&
+        retry_until "IF OBJECT_ID('upgrade_probe.dbo.probe') IS NULL CREATE TABLE upgrade_probe.dbo.probe (v nvarchar(50));
         IF NOT EXISTS (SELECT 1 FROM upgrade_probe.dbo.probe) INSERT upgrade_probe.dbo.probe VALUES ('$probe_value');"
       ;;
   esac
@@ -120,15 +126,29 @@ read_probe() {
 
 echo "::group::[$engine] seed data with $from_image"
 start "$from_image"
-write_probe
-read_probe
+if ! { write_probe && read_probe; }; then
+  echo "[$engine] setup failed: $from_image could not store the probe" >&2
+  exit 3
+fi
 docker stop -t 60 "$name" >/dev/null
 docker rm "$name" >/dev/null
 echo "::endgroup::"
 
 echo "::group::[$engine] restart the same volume with $to_image"
 start "$to_image"
-read_probe
+if read_probe; then
+  status=0
+else
+  status=$?
+fi
 echo "::endgroup::"
+
+if [ "$status" -eq 2 ]; then
+  echo "[$engine] $to_image exited on data written by $from_image (incompatible data)" >&2
+  exit 4
+elif [ "$status" -ne 0 ]; then
+  echo "[$engine] $to_image is running but the probe written by $from_image is unreadable" >&2
+  exit 5
+fi
 
 echo "[$engine] $from_image -> $to_image: data readable after upgrade"

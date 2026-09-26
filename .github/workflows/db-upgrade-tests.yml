@@ -97,8 +97,12 @@ jobs:
           EXPECT_FAILURE: ${{ matrix.expect-failure }}
         run: |
           if [ "$EXPECT_FAILURE" = "true" ]; then
-            if head/.devops/tests/db-upgrade/run-db-upgrade-test.sh "$ENGINE" "$FROM" "$TO"; then
-              echo "::error::Expected $FROM -> $TO to fail on the same volume, but it passed: the upgrade test no longer detects incompatible data."
+            # Only exit code 4 proves the probe was stored and the new image then
+            # refused the data; any other failure is a broken harness or setup.
+            status=0
+            head/.devops/tests/db-upgrade/run-db-upgrade-test.sh "$ENGINE" "$FROM" "$TO" || status=$?
+            if [ "$status" -ne 4 ]; then
+              echo "::error::Expected $FROM -> $TO to exit 4 (new image exits on incompatible data), got $status."
               exit 1
             fi
             echo "Incompatible upgrade detected as expected."
