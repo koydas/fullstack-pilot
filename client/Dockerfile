@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build
 
 # Serve the static assets with nginx
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
