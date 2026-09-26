@@ -15,7 +15,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build MongoDB Docker image
         run: |
@@ -27,7 +27,7 @@ jobs:
           cp databases/mongo-db/docker-compose.yml databases/mongo-db-compose.yml
 
       - name: Upload package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mongo-db-docker-package
           path: |
