@@ -48,7 +48,8 @@ router.get(
 router.post(
   '/',
   asyncHandler(async (req, res) => {
-    const appRecord = await createApp(req.body);
+    // Express 5 leaves req.body undefined when the request has no parsable body.
+    const appRecord = await createApp(req.body ?? {});
     res.status(201).json(appRecord);
   })
 );

@@ -1,0 +1,63 @@
+# Dependency version updates — see docs/adr/ADR-004-latest-dependency-versions.md.
+# Every ecosystem tracks its latest stable release, majors included.
+# Minor/patch bumps are grouped per directory; majors get their own PR so the
+# migration can be reviewed on its own.
+# Held-back dependencies must be declared with an `ignore` rule here, with a
+# comment giving the reason and the condition for removing it.
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/client"
+      - "/services/apps-service"
+      - "/services/agent-service"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "pip"
+    directory: "/services/services-service"
+    schedule:
+      interval: "weekly"
+    groups:
+      pip-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "nuget"
+    directory: "/services/dependencies-service"
+    schedule:
+      interval: "weekly"
+    groups:
+      nuget-minor-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/client"
+      - "/services/agent-service"
+      - "/services/apps-service"
+      - "/services/dependencies-service"
+      - "/services/services-service"
+      - "/databases/mongo-db"
+      - "/databases/mssql"
+      - "/databases/postgre"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
