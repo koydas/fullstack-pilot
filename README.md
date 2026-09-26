@@ -151,6 +151,7 @@ Agent behavior, scope rules, exploration strategy, and execution workflow are go
 - [ADR-001: Polyglot persistence](docs/adr/ADR-001-polyglot-persistence.md)
 - [ADR-002: Service boundaries](docs/adr/ADR-002-service-boundaries.md)
 - [ADR-003: GitOps model](docs/adr/ADR-003-gitops-model.md)
+- [ADR-004: Track latest dependency versions](docs/adr/ADR-004-latest-dependency-versions.md)
 
 ## Logging
 - **Goal**: each backend emits HTTP request logs (method, path, status, duration) to simplify local debugging and containerized monitoring.
