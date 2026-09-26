@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/mssql/server:2022-latest
+FROM mcr.microsoft.com/mssql/server:2025-latest
 
 ENV ACCEPT_EULA=Y \
     MSSQL_PID=Developer \
