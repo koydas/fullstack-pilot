@@ -11,5 +11,5 @@ docker run -d \
   -e POSTGRES_USER=fullstack \
   -e POSTGRES_PASSWORD=fullstack \
   -p 5432:5432 \
-  -v "$(pwd)/data:/var/lib/postgresql/data" \
+  -v "$(pwd)/pgdata:/var/lib/postgresql" \
   fullstack-pilot-postgres:latest

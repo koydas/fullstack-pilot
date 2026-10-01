@@ -4,11 +4,17 @@
 #   2. stop it and start <to-image> on the same volume,
 #   3. check the probe record is still readable.
 #
+# When the images need a data migration (DB_UPGRADE_MIGRATE_SCRIPT is set and,
+# for postgres, the major version changes), step 2 runs
+# `<script> <from-image> <to-image> <volume> <new-volume>` and starts
+# <to-image> on the new volume instead, so CI checks the documented migration.
+#
 # Exit codes:
 #   0  data readable after the upgrade
 #   3  setup failed: <from-image> could not start or store the probe
 #   4  <to-image> exited on the existing volume (incompatible data)
 #   5  <to-image> kept running but the probe could not be read back
+#   6  the migration script failed
 #   other  unexpected error (e.g. image pull failure)
 #
 # Usage: run-db-upgrade-test.sh <mongo|postgres|mssql> <from-image> <to-image>
@@ -18,6 +24,7 @@ engine=${1:?engine required (mongo|postgres|mssql)}
 from_image=${2:?from-image required}
 to_image=${3:?to-image required}
 timeout_seconds=${DB_UPGRADE_TIMEOUT:-300}
+migrate_script=${DB_UPGRADE_MIGRATE_SCRIPT:-}
 mssql_password=${MSSQL_SA_PASSWORD:-YourStrong!Passw0rd}
 
 name="db-upgrade-${engine}-$$"
@@ -30,7 +37,7 @@ case "$engine" in
     env_args=()
     ;;
   postgres)
-    mount=/var/lib/postgresql/data
+    mount=  # depends on the image, see data_mount
     env_args=(-e POSTGRES_DB=fullstack-pilot -e POSTGRES_USER=fullstack -e POSTGRES_PASSWORD=fullstack)
     ;;
   mssql)
@@ -45,7 +52,7 @@ esac
 
 cleanup() {
   docker rm -f "$name" >/dev/null 2>&1 || true
-  docker volume rm -f "$name" >/dev/null 2>&1 || true
+  docker volume rm -f "$name" "$name-new" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
@@ -95,8 +102,34 @@ retry_until() {
   return 1
 }
 
+# PostgreSQL 18+ images keep data under /var/lib/postgresql/<major>/docker and
+# refuse a mount at /var/lib/postgresql/data, so follow the image's VOLUME.
+data_mount() {
+  if [ -n "$mount" ]; then
+    echo "$mount"
+  elif [[ $(docker image inspect -f '{{json .Config.Volumes}}' "$1") == *'"/var/lib/postgresql/data"'* ]]; then
+    echo /var/lib/postgresql/data
+  else
+    echo /var/lib/postgresql
+  fi
+}
+
+pg_major() {
+  docker image inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$1" | sed -n 's/^PG_MAJOR=//p'
+}
+
+needs_migration() {
+  [ -n "$migrate_script" ] || return 1
+  case "$engine" in
+    postgres) [ "$(pg_major "$from_image")" != "$(pg_major "$to_image")" ] ;;
+    *) return 0 ;;
+  esac
+}
+
+# start <image> [volume]
 start() {
-  docker run -d --name "$name" "${env_args[@]}" -v "$name:$mount" "$1" >/dev/null
+  local volume=${2:-$name}
+  docker run -d --name "$name" "${env_args[@]}" -v "$volume:$(data_mount "$1")" "$1" >/dev/null
 }
 
 write_probe() {
@@ -124,6 +157,9 @@ read_probe() {
   esac
 }
 
+docker image inspect "$from_image" >/dev/null 2>&1 || docker pull -q "$from_image" >/dev/null
+docker image inspect "$to_image" >/dev/null 2>&1 || docker pull -q "$to_image" >/dev/null
+
 echo "::group::[$engine] seed data with $from_image"
 start "$from_image"
 if ! { write_probe && read_probe; }; then
@@ -134,8 +170,18 @@ docker stop -t 60 "$name" >/dev/null
 docker rm "$name" >/dev/null
 echo "::endgroup::"
 
-echo "::group::[$engine] restart the same volume with $to_image"
-start "$to_image"
+if needs_migration; then
+  echo "::group::[$engine] migrate to a new volume with $migrate_script, then start $to_image"
+  if ! "$migrate_script" "$from_image" "$to_image" "$name" "$name-new"; then
+    echo "::endgroup::"
+    echo "[$engine] migration script failed: $from_image -> $to_image" >&2
+    exit 6
+  fi
+  start "$to_image" "$name-new"
+else
+  echo "::group::[$engine] restart the same volume with $to_image"
+  start "$to_image"
+fi
 if read_probe; then
   status=0
 else

@@ -2,7 +2,7 @@
 
 Checks that a new database image can start on, and read, data written by the previous image. The `smoke` tests only cover empty volumes, so a major version that cannot open existing data (for example a PostgreSQL major) would otherwise pass CI and fail on a real deployment.
 
-CI runs this on pull requests touching `databases/**` or `docker-compose.yml` (`.github/workflows/db-upgrade-tests.yml`), comparing the base branch image with the PR image. A self-test also checks that `postgres:16` → `postgres:17` on the same volume is reported as incompatible data (exit code `4`), so the harness cannot pass on an unrelated failure.
+CI runs this on pull requests touching `databases/**` or `docker-compose.yml` (`.github/workflows/db-upgrade-tests.yml`), comparing the base branch image with the PR image. For a PostgreSQL major, it runs the documented migration (`databases/postgre/upgrade-major.sh`) and checks the data survives it. A self-test also checks that `postgres:16` → `postgres:17` on the same volume is reported as incompatible data (exit code `4`), so the harness cannot pass on an unrelated failure.
 
 ## Running locally
 
@@ -20,7 +20,11 @@ Optional variables:
 - `DB_UPGRADE_TIMEOUT` (default: `300`) – seconds to wait for each start and query
 - `MSSQL_SA_PASSWORD` (default: `YourStrong!Passw0rd`) – SA password for the `mssql` engine
 
-Exit codes: `0` upgrade OK, `3` the old image could not store the probe (setup), `4` the new image exits on the existing data, `5` the new image runs but cannot read the probe.
+- `DB_UPGRADE_MIGRATE_SCRIPT` – migration to run instead of reusing the volume, called as `<script> <from-image> <to-image> <volume> <new-volume>`; the new image then starts on `<new-volume>`. For `postgres` it only runs when the major version changes (CI sets it to `databases/postgre/upgrade-major.sh`, see ADR-005).
+
+Exit codes: `0` upgrade OK, `3` the old image could not store the probe (setup), `4` the new image exits on the existing data, `5` the new image runs but cannot read the probe, `6` the migration script failed.
+
+The PostgreSQL data mount is read from each image's `VOLUME` (`/var/lib/postgresql/data` before 18, `/var/lib/postgresql` from 18).
 
 ## Limits
 
