@@ -1,4 +1,7 @@
 # FullStack Pilot
+
+**Three languages, three databases, one set of CI guarantees** — a reference for the operational plumbing a platform team owns when services don't share a stack.
+
 ---
 [![Build frontend image](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml)
 [![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
@@ -11,9 +14,19 @@
 [![Playwright E2E](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml)
 ---
 ## What this repo demonstrates
-- Polyglot stack standing up quickly: React/Vite UI, Node/Express API on MongoDB, plus optional Flask (Postgres) and .NET (SQL Server) services.
-- Practical operational story: Docker Compose definitions, per-service Dockerfiles, and smoke-test scripts for each backend.
-- Review-ready defaults: lintable frontend, environment-based config, and repeatable init scripts for dependencies.
+
+React/Vite, Node/Express + MongoDB, Flask + PostgreSQL, .NET 8 + SQL Server, and a Node agent service on the Anthropic API — each independently built, tested and containerized. The interesting part is not the CRUD; it's what CI refuses to let through:
+
+| Guarantee | How |
+|---|---|
+| **A database image bump can't silently orphan existing data** | On PRs touching `databases/**`, CI writes a probe with the base branch's image, then starts the PR's image on the same volume and reads it back — for MongoDB, PostgreSQL and SQL Server. A built-in self-test asserts that `postgres:16 → 17` *fails*, so the harness can't pass on an unrelated error. [`.devops/tests/db-upgrade`](.devops/tests/db-upgrade/README.md) |
+| **CI tests on the runtime that ships** | A consistency test reads each service's `Dockerfile` and fails if the CI job testing it runs a different Node / Python / .NET version. [`runtime-versions.test.js`](.devops/tests/consistency/runtime-versions.test.js) |
+| **Schema changes are versioned, never done at runtime** | Alembic (Python), EF Core migrations (.NET), a versioned runner (Node/Mongo). [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) |
+| **The whole stack boots, not just each service** | Docker Compose smoke test of every service and datastore, logs dumped on failure; Playwright E2E on the client; per-service unit tests in their own language. |
+| **No default credentials** | `docker-compose.yml` fails fast if any secret is missing from `.env`. |
+| **The AI endpoint isn't an open proxy** | `agent-service` (`POST /pr-description`) enforces a token, per-IP and global rate limits evaluated *before* auth, a diff-size cap, and an upstream timeout. |
+
+Design rationale: [4 ADRs](docs/adr/README.md) and [3 decision records](docs/decisions/README.md) — polyglot persistence, service boundaries, monorepo vs. multirepo, multi-runtime.
 
 ## Goals / Non-goals
 - **Goals:** show end-to-end CRUD across a polyglot data layer (MongoDB, PostgreSQL, SQL Server), demonstrate multi-service wiring, keep setup friction low, and provide basic observability across services (structured logging and health endpoints).
