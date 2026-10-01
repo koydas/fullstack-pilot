@@ -192,11 +192,9 @@ Agent behavior, scope rules, exploration strategy, and execution workflow are go
 
 ## GitOps & Deployment
 The `.gitops/` directory stores ArgoCD `Application` manifests for each deployable workload, keeping deployment intent versioned with the app code. In this repo, those manifests are:
-- `.gitops/client-application.yaml`
 - `.gitops/apps-service-application.yaml`
 - `.gitops/services-service-application.yaml`
 - `.gitops/dependencies-service-application.yaml`
-- `.gitops/server-application.yaml`
 
 In a GitOps flow, ArgoCD watches this repository/branch and reconciles cluster state to match these files. Each `Application` points ArgoCD at a target path/revision and destination cluster/namespace; drift in-cluster is corrected back to Git-declared state.
 
