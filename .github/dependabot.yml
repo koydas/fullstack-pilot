@@ -2,7 +2,7 @@
 # Every ecosystem tracks its latest stable release, majors included.
 # Minor/patch bumps are grouped per directory; majors get their own PR so the
 # migration can be reviewed on its own, except packages that only resolve
-# together (react, EF Core), which are always grouped.
+# together (react, EF Core, dotnet images), which are always grouped.
 # Held-back dependencies must be declared with an `ignore` rule here, with a
 # comment giving the reason and the condition for removing it.
 version: 2
@@ -55,6 +55,10 @@ updates:
       - "/databases/postgre"
     schedule:
       interval: "weekly"
+    groups:
+      # The SDK (build stage) and ASP.NET runtime images must share a major.
+      dotnet-images:
+        patterns: ["dotnet/*"]
 
   - package-ecosystem: "docker-compose"
     directory: "/"
