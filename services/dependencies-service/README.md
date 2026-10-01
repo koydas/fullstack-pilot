@@ -1,9 +1,9 @@
 # Dependencies Service
 
-A .NET 8 controller-based API that exposes CRUD operations for dependencies. Storage uses Microsoft SQL Server so data persists across restarts.
+A .NET 10 controller-based API that exposes CRUD operations for dependencies. Storage uses Microsoft SQL Server so data persists across restarts.
 
 ## Prerequisites
-- .NET 8 SDK installed locally.
+- .NET 10 SDK installed locally.
 
 ## Run the service
 ```bash
