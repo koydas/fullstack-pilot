@@ -11,6 +11,7 @@
     "init:services": "node .devops/init-services.js",
     "init:client": "cd client && npm install",
     "test:smoke": "node .devops/tests/smoke/run-smoke-tests.js",
+    "test:consistency": "node --test .devops/tests/consistency/runtime-versions.test.js",
     "test:apps-service": "cd services/apps-service && npm test",
     "test:services-service": "npm --prefix services/services-service test",
     "test:dependencies-service": "npm --prefix services/dependencies-service test",

@@ -5,11 +5,13 @@ on:
     branches: ["main"]
     paths:
       - "services/**"
+      - ".devops/runtime-version.js"
       - ".github/workflows/services-unit-tests.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "services/**"
+      - ".devops/runtime-version.js"
       - ".github/workflows/services-unit-tests.yml"
   workflow_dispatch:
 
@@ -20,10 +22,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Resolve Node.js version from Dockerfile
+        id: runtime
+        run: |
+          version=$(node .devops/runtime-version.js services/apps-service/Dockerfile node)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ steps.runtime.outputs.version }}
           cache: npm
           cache-dependency-path: services/apps-service/package-lock.json
 
@@ -41,10 +49,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Resolve Node.js version from Dockerfile
+        id: runtime
+        run: |
+          version=$(node .devops/runtime-version.js services/agent-service/Dockerfile node)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ steps.runtime.outputs.version }}
 
       - name: Install agent-service dependencies
         run: npm install --no-audit --no-fund
@@ -61,10 +75,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Resolve Python version from Dockerfile
+        id: runtime
+        run: |
+          version=$(node .devops/runtime-version.js services/services-service/Dockerfile python)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: ${{ steps.runtime.outputs.version }}
           cache: "pip"
           cache-dependency-path: services/services-service/requirements.txt
 
@@ -82,10 +102,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Resolve .NET SDK version from Dockerfile
+        id: runtime
+        run: |
+          version=$(node .devops/runtime-version.js services/dependencies-service/Dockerfile dotnet)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: ${{ steps.runtime.outputs.version }}
 
       - name: Restore dependencies-service
         run: dotnet restore
