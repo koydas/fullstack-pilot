@@ -122,8 +122,8 @@ This repo intentionally splits responsibilities across independent services so e
   - **Data ownership boundary:** This service owns relational data and consistency rules that benefit from SQL constraints and ACID transactions.
   - **Trade-off:** Strong integrity and query power vs. more up-front schema design and migration discipline than document stores.
 
-- **dependencies-service (.NET 8 + SQL Server, port 6060)**
-  - **Why this choice:** .NET 8 demonstrates enterprise-oriented service implementation, and SQL Server reflects compatibility with common Microsoft-centric production environments.
+- **dependencies-service (.NET 10 + SQL Server, port 6060)**
+  - **Why this choice:** .NET 10 demonstrates enterprise-oriented service implementation, and SQL Server reflects compatibility with common Microsoft-centric production environments.
   - **Data ownership boundary:** This service owns SQL Server-backed dependency data and encapsulates its contract through its API and Swagger surface.
   - **Trade-off:** Strong tooling and enterprise interoperability vs. a heavier runtime/toolchain footprint for local contributors.
 
@@ -271,7 +271,7 @@ Run `npm run init` first so Node dependencies are installed for the repository a
 
 Additional local prerequisites for deterministic runs:
 - Python 3.10+ available as `python` for `services-service` tests.
-- .NET 8 SDK available on PATH for `dependencies-service` tests.
+- .NET 10 SDK available on PATH for `dependencies-service` tests.
 - Node.js 18+ for Node-based services and frontend tests.
 
 ## Project conventions

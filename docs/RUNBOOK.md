@@ -42,7 +42,21 @@ Audience: new teammate inheriting this repo.
    - “Drift” = live cluster state no longer matches manifest state in Git.
    - ArgoCD reconciliation pushes runtime back to what is declared in `.gitops/*.yaml`.
 
-## 3) Adding a new service (checklist)
+## 3) Upgrading a database major version
+
+A new major of a stateful database must not be pointed at the previous data volume (ADR-005).
+
+1. **Check CI on the upgrade PR.** `Database upgrade tests` seeds data with the base image and reads it with the PR image (`.devops/tests/db-upgrade/`).
+2. **PostgreSQL:** the new major runs on a new volume (`postgres<major>-data`). Copy existing data once:
+   ```bash
+   docker compose stop postgres
+   databases/postgre/upgrade-major.sh <old-image> <new-image> <old-volume> <new-volume>
+   docker compose up -d postgres
+   ```
+   The old volume is not modified; roll back by restoring the previous image and volume in `docker-compose.yml`. See `databases/postgre/README.md`.
+3. **Remove the old volume** only after the new one is verified.
+
+## 4) Adding a new service (checklist)
 
 - [ ] Create `services/<name>-service/`.
 - [ ] Add `services/<name>-service/Dockerfile`.

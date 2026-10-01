@@ -30,6 +30,9 @@ jobs:
           - name: postgres (databases/postgre)
             engine: postgres
             dockerfile-dir: databases/postgre
+            # A PostgreSQL major cannot open the previous data directory: CI runs
+            # the documented dump/restore instead of reusing the volume.
+            migrate-script: databases/postgre/upgrade-major.sh
           - name: mssql (databases/mssql)
             engine: mssql
             dockerfile-dir: databases/mssql
@@ -95,7 +98,11 @@ jobs:
           FROM: ${{ steps.images.outputs.from }}
           TO: ${{ steps.images.outputs.to }}
           EXPECT_FAILURE: ${{ matrix.expect-failure }}
+          MIGRATE_SCRIPT: ${{ matrix.migrate-script }}
         run: |
+          if [ -n "$MIGRATE_SCRIPT" ]; then
+            export DB_UPGRADE_MIGRATE_SCRIPT="head/$MIGRATE_SCRIPT"
+          fi
           if [ "$EXPECT_FAILURE" = "true" ]; then
             # Only exit code 4 proves the probe was stored and the new image then
             # refused the data; any other failure is a broken harness or setup.
