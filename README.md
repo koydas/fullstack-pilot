@@ -1,30 +1,40 @@
-# FullStack Pilot
+# fullstack-pilot
 
-**Three languages, three databases, one set of CI guarantees** — a reference for the operational plumbing a platform team owns when services don't share a stack.
+**A database bump that can't read yesterday's data shouldn't pass CI.**
 
----
-[![Build frontend image](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml)
-[![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
+> Dependabot opened a `postgres` 16 → 18 bump ([#194](https://github.com/koydas/fullstack-pilot/pull/194)). CI went red ([run](https://github.com/koydas/fullstack-pilot/actions/runs/36883137879)): 18 can't open a 16 data directory. It merged only once it carried a `pg_dumpall` migration that CI ran against real data ([run](https://github.com/koydas/fullstack-pilot/actions/runs/36887689772)).
 
-[![Package MongoDB image](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml)
-[![Package MSSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml)
-[![Package PostgreSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml)
+```mermaid
+flowchart LR
+    PR["PR touches databases/**"] --> OLD["base-branch image<br/>writes a probe row"]
+    OLD --> VOL[("same volume")]
+    VOL --> NEW["PR image<br/>reads the probe back"]
+    NEW -->|readable| OK["✅ green"]
+    NEW -->|exits or unreadable| KO["❌ red — ship a migration"]
+    ST["self-test: postgres 16 → 17"] -.->|must exit 4| NEW
+```
 
-[![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
-[![Playwright E2E](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml)
----
-## What this repo demonstrates
-
-React/Vite, Node/Express + MongoDB, Flask + PostgreSQL, .NET 8 + SQL Server, and a Node agent service on the Anthropic API — each independently built, tested and containerized. The interesting part is not the CRUD; it's what CI refuses to let through:
+Four runtimes (React/Vite, Node/Express + MongoDB, Flask + PostgreSQL, .NET 10 + SQL Server) plus a Node agent service on the Anthropic API. The CRUD is incidental; the point is what CI refuses to let through:
 
 | Guarantee | How |
 |---|---|
-| **A database image bump can't silently orphan existing data** | On PRs touching `databases/**`, CI writes a probe with the base branch's image, then starts the PR's image on the same volume and reads it back — for MongoDB, PostgreSQL and SQL Server. A built-in self-test asserts that `postgres:16 → 17` *fails*, so the harness can't pass on an unrelated error. [`.devops/tests/db-upgrade`](.devops/tests/db-upgrade/README.md) |
+| **A database image bump can't silently orphan existing data** | On PRs touching `databases/**`, CI writes a probe with the base branch's image, then starts the PR's image on the same volume and reads it back — for MongoDB, PostgreSQL and SQL Server. PostgreSQL majors must pass through the documented migration. A self-test asserts that `postgres:16 → 17` *fails* with exit code 4, so the harness can't pass on an unrelated error. [`.devops/tests/db-upgrade`](.devops/tests/db-upgrade/README.md) |
 | **CI tests on the runtime that ships** | A consistency test reads each service's `Dockerfile` and fails if the CI job testing it runs a different Node / Python / .NET version. [`runtime-versions.test.js`](.devops/tests/consistency/runtime-versions.test.js) |
 | **Schema changes are versioned, never done at runtime** | Alembic (Python), EF Core migrations (.NET), a versioned runner (Node/Mongo). [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) |
 | **The whole stack boots, not just each service** | Docker Compose smoke test of every service and datastore, logs dumped on failure; Playwright E2E on the client; per-service unit tests in their own language. |
 | **No default credentials** | `docker-compose.yml` fails fast if any secret is missing from `.env`. |
 | **The AI endpoint isn't an open proxy** | `agent-service` (`POST /pr-description`) enforces a token, per-IP and global rate limits evaluated *before* auth, a diff-size cap, and an upstream timeout. |
+
+**Try the guard** (Docker only):
+
+```bash
+git clone https://github.com/koydas/fullstack-pilot && cd fullstack-pilot
+.devops/tests/db-upgrade/run-db-upgrade-test.sh postgres postgres:16 postgres:17; echo "exit $?"   # 4 = incompatible data detected
+```
+
+[![DB upgrade tests](https://github.com/koydas/fullstack-pilot/actions/workflows/db-upgrade-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/db-upgrade-tests.yml)
+[![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
+[![Playwright E2E](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml)
 
 Design rationale: [4 ADRs](docs/adr/README.md) and [3 decision records](docs/decisions/README.md) — polyglot persistence, service boundaries, monorepo vs. multirepo, multi-runtime.
 
@@ -33,7 +43,7 @@ Design rationale: [4 ADRs](docs/adr/README.md) and [3 decision records](docs/dec
 - **Non-goals:** production auth, extensive test coverage, or cloud-specific deployment templates.
 
 ## Prerequisites
-- Node.js (18+ recommended)
+- Node.js 26 (the version the Dockerfiles ship)
 - Docker and Docker Compose
 
 ## Secret configuration
