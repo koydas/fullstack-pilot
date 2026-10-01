@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:18
 
 ENV POSTGRES_DB=fullstack-pilot \
     POSTGRES_USER=fullstack \
