@@ -30,11 +30,9 @@ Audience: new teammate inheriting this repo.
    - This model is documented in `docs/adr/ADR-003-gitops-model.md`.
 
 2. **Manifests ArgoCD watches (under `.gitops/`):**
-   - `.gitops/client-application.yaml`
    - `.gitops/apps-service-application.yaml`
    - `.gitops/services-service-application.yaml`
    - `.gitops/dependencies-service-application.yaml`
-   - `.gitops/server-application.yaml`
 
 3. **Promotion to staging (branch/PR model).**
    - Typical order here: merge to `dev`, validate, then promote the same commit to `staging` via PR/cherry-pick (as described in `README.md`).
