@@ -1,7 +1,8 @@
 # Dependency version updates — see docs/adr/ADR-004-latest-dependency-versions.md.
 # Every ecosystem tracks its latest stable release, majors included.
 # Minor/patch bumps are grouped per directory; majors get their own PR so the
-# migration can be reviewed on its own.
+# migration can be reviewed on its own, except packages that only resolve
+# together (react, EF Core), which are always grouped.
 # Held-back dependencies must be declared with an `ignore` rule here, with a
 # comment giving the reason and the condition for removing it.
 version: 2
@@ -17,6 +18,9 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
     groups:
+      # react and react-dom (and their types) only resolve together.
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
       npm-minor-patch:
         update-types: ["minor", "patch"]
 
@@ -33,6 +37,9 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      # EF Core packages must share a version (NU1605 otherwise).
+      ef-core:
+        patterns: ["Microsoft.EntityFrameworkCore*"]
       nuget-minor-patch:
         update-types: ["minor", "patch"]
 
