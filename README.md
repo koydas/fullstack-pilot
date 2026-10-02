@@ -1,25 +1,41 @@
 # FullStack Pilot
 
-**Three languages, three databases, one set of CI guarantees** — a reference for the operational plumbing a platform team owns when services don't share a stack.
+**A database upgrade that can't read yesterday's data shouldn't pass CI.**
 
----
-[![Build frontend image](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-frontend.yml)
-[![Build backend images](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/build-backend.yml)
-
-[![Package MongoDB image](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mongo-db.yml)
-[![Package MSSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/mssql.yml)
-[![Package PostgreSQL image](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/postgre-db.yml)
-
+[![Database upgrade tests](https://github.com/koydas/fullstack-pilot/actions/workflows/db-upgrade-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/db-upgrade-tests.yml)
 [![Smoke tests](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/smoke-tests.yml)
 [![Playwright E2E](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml/badge.svg)](https://github.com/koydas/fullstack-pilot/actions/workflows/playwright-e2e.yml)
----
+
+Dependabot opened `postgres` 16 → 18 ([#194](https://github.com/koydas/fullstack-pilot/pull/194)). The image builds, but PostgreSQL 18 can't open a 16 data directory. On Dependabot's commit, the upgrade harness turned CI **red** with exit 4, "incompatible data" ([run 36883137879](https://github.com/koydas/fullstack-pilot/actions/runs/36883137879)). It went green only once the PR carried the `pg_dumpall` migration ([#203](https://github.com/koydas/fullstack-pilot/pull/203), [run 36887689772](https://github.com/koydas/fullstack-pilot/actions/runs/36887689772)).
+
+```mermaid
+flowchart LR
+    A[PR touches databases/**] --> B[base image writes a probe<br/>to a fresh volume]
+    B --> C{major upgrade with<br/>a migration script?}
+    C -->|no| D[PR image starts<br/>on the same volume]
+    C -->|yes| E[migration script copies<br/>to a new volume] --> F[PR image starts<br/>on the new volume]
+    D --> G{probe readable?}
+    F --> G
+    G -->|yes| H[green]
+    G -->|no| I[red: exit 4 / 5 / 6]
+```
+
+**Try it** (Docker only). The harness's own self-test must fail:
+
+```bash
+git clone https://github.com/koydas/fullstack-pilot && cd fullstack-pilot
+.devops/tests/db-upgrade/run-db-upgrade-test.sh postgres postgres:16 postgres:17   # exits 4
+```
+
+The same harness covers MongoDB and SQL Server, and it is one of several guarantees CI enforces across three languages and three databases.
+
 ## What this repo demonstrates
 
 React/Vite, Node/Express + MongoDB, Flask + PostgreSQL, .NET 10 + SQL Server, and a Node agent service on the Anthropic API — each independently built, tested and containerized. The interesting part is not the CRUD; it's what CI refuses to let through:
 
 | Guarantee | How |
 |---|---|
-| **A database image bump can't silently orphan existing data** | On PRs touching `databases/**`, CI writes a probe with the base branch's image, then starts the PR's image on the same volume and reads it back — for MongoDB, PostgreSQL and SQL Server. A PostgreSQL major runs the documented dump/restore to a new volume instead, so the migration itself is tested ([ADR-005](docs/adr/ADR-005-database-major-upgrades.md)). A built-in self-test asserts that `postgres:16 → 17` on the same volume *fails*, so the harness can't pass on an unrelated error. [`.devops/tests/db-upgrade`](.devops/tests/db-upgrade/README.md) |
+| **A database image bump can't silently orphan existing data** | On PRs touching `databases/**`, CI writes a probe with the base branch's image, then starts the PR's image on the same volume and reads it back — for MongoDB, PostgreSQL and SQL Server. A PostgreSQL major runs the documented dump/restore to a new volume instead, so the migration itself is tested ([ADR-005](docs/adr/ADR-005-database-major-upgrades.md)). A built-in self-test asserts that `postgres:16 → 17` on the same volume *fails*, so the harness can't pass on an unrelated error. Every database image is pinned (`mongo:8.3.11`, `postgres:18.6`, SQL Server `2025-latest` by digest), so an upstream change arrives as a Dependabot PR and goes through the harness. [`.devops/tests/db-upgrade`](.devops/tests/db-upgrade/README.md) |
 | **CI tests on the runtime that ships** | A consistency test reads each service's `Dockerfile` and fails if the CI job testing it runs a different Node / Python / .NET version. [`runtime-versions.test.js`](.devops/tests/consistency/runtime-versions.test.js) |
 | **Schema changes are versioned migrations, never ORM auto-create** | Alembic (Python), EF Core migrations (.NET), a versioned runner (Node/Mongo), applied on service startup. [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) |
 | **The whole stack boots, not just each service** | Docker Compose smoke test of every service and datastore, logs dumped on failure; Playwright E2E on the client; per-service unit tests in their own language. |
@@ -33,7 +49,7 @@ Design rationale: [5 ADRs](docs/adr/README.md) and [3 decision records](docs/dec
 - **Non-goals:** production auth, extensive test coverage, or cloud-specific deployment templates.
 
 ## Prerequisites
-- Node.js (18+ recommended)
+- Node.js 26 (the version the Dockerfiles ship and CI tests)
 - Docker and Docker Compose
 
 ## Secret configuration
