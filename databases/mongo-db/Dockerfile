@@ -1,4 +1,4 @@
-FROM mongo:8
+FROM mongo:8.3.11
 
 ENV MONGO_INITDB_DATABASE=fullstack-pilot
 
