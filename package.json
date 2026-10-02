@@ -42,6 +42,6 @@
   },
   "homepage": "https://github.com/koydas/fullstack-pilot#readme",
   "dependencies": {
-    "chalk": "^6.0.0"
+    "chalk": "^6.0.1"
   }
 }
