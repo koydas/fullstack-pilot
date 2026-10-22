@@ -182,6 +182,9 @@ Agent behavior, scope rules, exploration strategy, and execution workflow are go
 - [ADR-003: GitOps model](docs/adr/ADR-003-gitops-model.md)
 - [ADR-004: Track latest dependency versions](docs/adr/ADR-004-latest-dependency-versions.md)
 
+## Risk analyses
+- [Python 3.14 → 3.15 (`services-service`, PR #223)](docs/RISK-ANALYSIS-PYTHON-3.15.md) — low risk; merge once smoke is green on a rebased head
+
 ## Logging
 - **Goal**: each backend emits HTTP request logs (method, path, status, duration) to simplify local debugging and containerized monitoring.
 - **Standard output**: services write logs to `stdout`/`stderr`, so they are visible with `docker compose logs -f <service>`.
